@@ -1,0 +1,51 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  APP_NAME: remyx
+  BIN_DIR: ./bin
+  BIN: "{{.BIN_DIR}}/{{.APP_NAME}}{{exeExt}}"
+
+tasks:
+  default:
+    desc: "Executes task 'release'"
+    deps:
+      - release
+
+  release:
+    desc: "Builds the backend and frontend ready for releasing."
+    deps:
+      - build
+
+  build:
+    desc: "Builds the backend binary and frontend assets."
+    cmds:
+      - task: buildbe
+
+  buildbe:
+    desc: "Builds the backend binary."
+    cmds:
+      - go build
+        -v
+        -o {{.BIN}}
+        ./cmd/{{.APP_NAME}}/main.go
+
+  run:
+    desc: "Run backend."
+    cmds:
+      - go run ./cmd/{{.APP_NAME}}/main.go
+
+  migrate-up:
+    dir: migrations/postgres
+    dotenv:
+      - "../../.env"
+    cmds:
+      - goose up
+
+  migrate-down:
+    dir: migrations/postgres
+    dotenv:
+      - "../../.env"
+    cmds:
+      - goose down
