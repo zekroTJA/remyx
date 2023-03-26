@@ -193,6 +193,10 @@ func (t *Myxer) updatePlaylist(tx database.Transaction, userUid string, playlist
 
 	// TODO: make this paged
 	items, err := client.GetPlaylistItems(ctx, playlistUid)
+	// TODO: capsule that in a util function
+	if spErr, ok := err.(spotify.Error); ok && spErr.Status == 404 {
+		playlistUid, err = t.createTargetPlaylist(tx, userUid)
+	}
 	if err != nil {
 		return err
 	}

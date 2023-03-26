@@ -14,6 +14,8 @@ require (
 	golang.org/x/oauth2 v0.0.0-20210810183815-faf39c7919d5
 )
 
+require github.com/robfig/cron v1.2.0 // indirect
+
 require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/bytedance/sonic v1.8.0 // indirect
