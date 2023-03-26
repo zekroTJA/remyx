@@ -10,6 +10,7 @@ import (
 	"github.com/zekrotja/remyx/internal/config"
 	"github.com/zekrotja/remyx/internal/database"
 	"github.com/zekrotja/remyx/internal/myxer"
+	"github.com/zekrotja/remyx/internal/scheduler"
 	"github.com/zekrotja/remyx/internal/webserver"
 	"github.com/zekrotja/remyx/internal/webserver/tokens"
 	"github.com/zekrotja/rogu/log"
@@ -58,6 +59,8 @@ func main() {
 	)
 
 	mxr := myxer.New(db, auth)
+
+	scheduler.Run(mxr)
 
 	log.Info().Field("addr", cfg.Webserver.BindAddress).Msg("Starting web server ...")
 	go func() {

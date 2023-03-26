@@ -2,6 +2,7 @@ package myxer
 
 import (
 	"context"
+	"errors"
 
 	"github.com/zekrotja/remyx/internal/database"
 	"github.com/zmb3/spotify/v2"
@@ -26,6 +27,8 @@ func New(db database.Database, auth *spotifyauth.Authenticator) *Myxer {
 func (t *Myxer) ScheduleSyncs(remyxUids ...string) error {
 	// TODO: add logic here to better schedule syncs
 
+	var mErr error
+
 	if len(remyxUids) == 0 {
 		myxes, err := t.db.ListRemyxes("")
 		if err != nil {
@@ -39,11 +42,11 @@ func (t *Myxer) ScheduleSyncs(remyxUids ...string) error {
 	for _, uid := range remyxUids {
 		err := t.Sync(uid)
 		if err != nil {
-			return err
+			err = errors.Join(mErr, err)
 		}
 	}
 
-	return nil
+	return mErr
 }
 
 func (t *Myxer) Sync(remyxUid string) error {
