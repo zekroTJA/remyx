@@ -26,6 +26,71 @@ func Remyxes(rg *gin.RouterGroup, db database.Database, mxr *myxer.Myxer) {
 	rg.GET("", r.listMine)
 	rg.POST("/create", r.create)
 	rg.POST("/connect/:id", r.connect)
+	rg.GET("/:id", r.get)
+}
+
+func (t *routerRemyxes) listMine(ctx *gin.Context) {
+	client := ctx.MustGet("client").(*http.Client)
+	spClient := spotify.New(client)
+
+	me, err := spClient.CurrentUser(ctx.Request.Context())
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError,
+			models.Error{Message: "failed getting current user details", Details: err.Error()})
+		return
+	}
+
+	rmxs, err := t.db.ListRemyxes(me.ID)
+	if err != nil {
+		if err == database.ErrNotFound {
+			ctx.JSON(http.StatusNotFound,
+				models.Error{Message: "no remyxes found for your account"})
+		} else {
+			ctx.JSON(http.StatusInternalServerError,
+				models.Error{Message: "failed getting remyxes", Details: err.Error()})
+		}
+		return
+	}
+
+	res := make([]models.RemyxWithCount, 0, len(rmxs))
+	for _, rmx := range rmxs {
+		res = append(res, models.RemyxWithCount{
+			RemyxWithCount: rmx,
+			Expires:        rmx.CreatedAt.Add(shared.RemyxExpiry),
+		})
+	}
+
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (t routerRemyxes) get(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	rmx, err := t.db.GetRemyx(id)
+	if err != nil {
+		if err == database.ErrNotFound {
+			ctx.JSON(http.StatusNotFound,
+				models.Error{Message: "remyx with this id could not be found"})
+		} else {
+			ctx.JSON(http.StatusInternalServerError,
+				models.Error{Message: "failed getting remyx entry", Details: err.Error()})
+		}
+		return
+	}
+
+	// sources, err := t.db.GetSourcePlaylists(rmx.Uid)
+	// if err != nil {
+	// 	ctx.JSON(http.StatusInternalServerError,
+	// 		models.Error{Message: "failed getting remyx sources", Details: err.Error()})
+
+	// 	return
+	// }
+
+	res := models.RemyxWithPlaylists{
+		Remyx: rmx,
+	}
+
+	ctx.JSON(http.StatusOK, res)
 }
 
 func (t routerRemyxes) create(ctx *gin.Context) {
@@ -206,38 +271,4 @@ func (t routerRemyxes) connect(ctx *gin.Context) {
 		Uid:     rmx.Uid,
 		Expires: rmx.CreatedAt.Add(shared.RemyxExpiry),
 	})
-}
-
-func (t *routerRemyxes) listMine(ctx *gin.Context) {
-	client := ctx.MustGet("client").(*http.Client)
-	spClient := spotify.New(client)
-
-	me, err := spClient.CurrentUser(ctx.Request.Context())
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError,
-			models.Error{Message: "failed getting current user details", Details: err.Error()})
-		return
-	}
-
-	rmxs, err := t.db.ListRemyxes(me.ID)
-	if err != nil {
-		if err == database.ErrNotFound {
-			ctx.JSON(http.StatusNotFound,
-				models.Error{Message: "no remyxes found for your account"})
-		} else {
-			ctx.JSON(http.StatusInternalServerError,
-				models.Error{Message: "failed getting remyxes", Details: err.Error()})
-		}
-		return
-	}
-
-	res := make([]models.RemyxWithCount, 0, len(rmxs))
-	for _, rmx := range rmxs {
-		res = append(res, models.RemyxWithCount{
-			RemyxWithCount: rmx,
-			Expires:        rmx.CreatedAt.Add(shared.RemyxExpiry),
-		})
-	}
-
-	ctx.JSON(http.StatusOK, res)
 }

@@ -35,3 +35,9 @@ type RemyxWithCount struct {
 
 	Expires time.Time `json:"expires"`
 }
+
+type RemyxWithPlaylists struct {
+	database.Remyx
+
+	Playlists []Playlist `json:"playlists"`
+}
