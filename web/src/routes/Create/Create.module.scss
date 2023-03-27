@@ -1,0 +1,15 @@
+label {
+    display: block;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    max-width: 30em;
+}
