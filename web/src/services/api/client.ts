@@ -2,8 +2,7 @@ import { Playlist, Remyx, RemyxCreateResponse } from "./models";
 
 import { APIError } from "./errors";
 
-const ENDPOINT =
-  (import.meta.env.VITE_SERVER_ADDRESS ?? "http://localhost:8081") + "/api";
+const ENDPOINT = (import.meta.env.VITE_SERVER_ADDRESS ?? "") + "/api";
 
 export const loginUrl = () => `${ENDPOINT}/oauth/login`;
 

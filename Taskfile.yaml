@@ -36,6 +36,14 @@ tasks:
     cmds:
       - go run ./cmd/{{.APP_NAME}}/main.go
 
+  run-fe:
+    desc: "Run the frontend."
+    dir: "web"
+    env:
+      VITE_SERVER_ADDRESS: http://localhost:8081
+    cmds:
+      - yarn run dev
+
   migrate-up:
     dir: migrations/postgres
     dotenv:
