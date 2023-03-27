@@ -50,6 +50,7 @@ func main() {
 		}
 	}()
 
+	// TODO: Wrap authorizer stuff
 	redirectUrl := fmt.Sprintf("%s/api/oauth/callback", cfg.Oauth.PublicAddress)
 	auth := spotifyauth.New(
 		spotifyauth.WithRedirectURL(redirectUrl),

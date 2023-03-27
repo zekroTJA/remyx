@@ -2,6 +2,7 @@ package webserver
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/mandrigin/gin-spa/spa"
 	"github.com/zekrotja/remyx/internal/config"
 	"github.com/zekrotja/remyx/internal/database"
 	"github.com/zekrotja/remyx/internal/myxer"
@@ -26,6 +27,10 @@ func Run(
 	api := router.Group("/api")
 	api.Use(middleware.Logger(level.Info, "WebServer"))
 
+	if cfg.Debug {
+		api.Use(middleware.Cors("http://localhost:3000"))
+	}
+
 	routers.OAuth(api.Group("/oauth"), auth, cache, cfg.Debug)
 
 	// --- autenticated routes ---
@@ -33,6 +38,8 @@ func Run(
 	authApi.Use(middleware.Auth(auth, cache))
 	routers.Playlists(authApi.Group("/playlists"))
 	routers.Remyxes(authApi.Group("/remyxes"), db, mxr)
+
+	router.Use(spa.Middleware("/", "./web/dist"))
 
 	return router.Run(cfg.Webserver.BindAddress)
 }

@@ -8,13 +8,15 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/joho/godotenv v1.5.1
 	github.com/kelseyhightower/envconfig v1.4.0
+	github.com/mandrigin/gin-spa v0.0.0-20200212133200-790d0c0c7335
+	github.com/robfig/cron v1.2.0
 	github.com/zekroTJA/timedmap v1.5.1
 	github.com/zekrotja/rogu v0.4.2
 	github.com/zmb3/spotify/v2 v2.3.1
 	golang.org/x/oauth2 v0.0.0-20210810183815-faf39c7919d5
 )
 
-require github.com/robfig/cron v1.2.0 // indirect
+require github.com/gin-gonic/contrib v0.0.0-20221130124618-7e01895a63f2 // indirect
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
