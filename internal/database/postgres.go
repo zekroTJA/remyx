@@ -6,6 +6,7 @@ import (
 
 	pq "github.com/lib/pq"
 	"github.com/pressly/goose/v3"
+	"github.com/zekrotja/rogu/log"
 )
 
 type PostgresDriver struct {
@@ -55,6 +56,7 @@ func (t *PostgresDriver) Close() error {
 
 func pgErrWrapper(err error) error {
 	if pgErr, ok := err.(*pq.Error); ok && pgErr.Code == "23505" {
+		log.Debug().Err(pgErr).Msg("PG Conflict Error")
 		return ErrConflict
 	}
 	return err

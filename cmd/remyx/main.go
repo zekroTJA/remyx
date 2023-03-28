@@ -22,6 +22,7 @@ var scopes = []string{
 	spotifyauth.ScopePlaylistReadPrivate,
 	spotifyauth.ScopePlaylistReadCollaborative,
 	spotifyauth.ScopePlaylistModifyPrivate,
+	spotifyauth.ScopeUserLibraryRead,
 }
 
 func main() {

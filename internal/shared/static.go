@@ -7,4 +7,7 @@ const (
 	SessionLifetime = 24 * time.Hour
 
 	RemyxExpiry = 24 * time.Hour * 365
+
+	LibraryPlaylistId   = "__library_playlist"
+	LibraryPlaylistName = "Liked Songs"
 )

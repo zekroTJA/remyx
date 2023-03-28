@@ -20,7 +20,7 @@ CREATE TABLE "source_playlist" (
     "remyx_uid" VARCHAR NOT NULL,
     "playlist_uid" VARCHAR NOT NULL,
     "user_uid" VARCHAR NOT NULL,
-    PRIMARY KEY ("remyx_uid", "playlist_uid"),
+    PRIMARY KEY ("remyx_uid", "playlist_uid", "user_uid"),
     FOREIGN KEY ("remyx_uid") 
         REFERENCES "remyx" ("uid")
         ON DELETE CASCADE

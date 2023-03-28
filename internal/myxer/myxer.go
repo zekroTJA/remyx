@@ -5,6 +5,8 @@ import (
 	"errors"
 
 	"github.com/zekrotja/remyx/internal/database"
+	"github.com/zekrotja/remyx/internal/shared"
+	"github.com/zekrotja/rogu/log"
 	"github.com/zmb3/spotify/v2"
 	spotifyauth "github.com/zmb3/spotify/v2/auth"
 	"golang.org/x/oauth2"
@@ -39,11 +41,18 @@ func (t *Myxer) ScheduleSyncs(remyxUids ...string) error {
 		}
 	}
 
+	log.Debug().Field("n", len(remyxUids)).Msg("Schedule syncs ...")
+
 	for _, uid := range remyxUids {
 		err := t.Sync(uid)
 		if err != nil {
-			err = errors.Join(mErr, err)
+			mErr = errors.Join(mErr, err)
 		}
+	}
+
+	log.Debug().Field("n", len(remyxUids)).Msg("Sync scheduling finished ...")
+	if mErr != nil {
+		log.Error().Err(mErr).Msg("Scheduled sync failed")
 	}
 
 	return mErr
@@ -108,16 +117,7 @@ func (t *Myxer) Sync(remyxUid string) error {
 			}
 		}
 		if !contained {
-			id, err := t.createTargetPlaylist(tx, source.UserUid)
-			if err != nil {
-				return err
-			}
-			newTarget := database.RemyxPlaylist{
-				RemyxUid:    rmx.Uid,
-				PlaylistUid: id,
-				UserUid:     source.UserUid,
-			}
-			err = tx.AddTargetPlaylist(newTarget)
+			newTarget, err := t.createTargetPlaylist(tx, rmx.Uid, source.UserUid)
 			if err != nil {
 				return err
 			}
@@ -126,13 +126,13 @@ func (t *Myxer) Sync(remyxUid string) error {
 	}
 
 	for _, target := range targets {
-		err = t.updatePlaylist(tx, target.UserUid, target.PlaylistUid, remyxedTracks)
+		err = t.updatePlaylist(tx, rmx.Uid, target.UserUid, target.PlaylistUid, remyxedTracks)
 		if err != nil {
 			return err
 		}
 	}
 
-	return nil
+	return tx.Commit()
 }
 
 func (t *Myxer) getClient(ctx context.Context, tx database.Transaction, userUid string) (*spotify.Client, error) {
@@ -162,31 +162,55 @@ func (t *Myxer) getSongs(
 		return nil, err
 	}
 
-	tracks, err := client.GetPlaylistItems(ctx, playlistUid, spotify.Limit(limit))
-	if err != nil {
-		return nil, err
+	var items []spotify.PlaylistItem
+	if playlistUid == shared.LibraryPlaylistId {
+		tracks, err := client.CurrentUsersTracks(ctx, spotify.Limit(limit))
+		if err != nil {
+			return nil, err
+		}
+		items = make([]spotify.PlaylistItem, 0, len(tracks.Tracks))
+		for i := range tracks.Tracks {
+			items = append(items, spotify.PlaylistItem{
+				Track: spotify.PlaylistItemTrack{
+					Track: &tracks.Tracks[i].FullTrack,
+				},
+			})
+		}
+	} else {
+		tracks, err := client.GetPlaylistItems(ctx, playlistUid, spotify.Limit(limit))
+		if err != nil {
+			return nil, err
+		}
+		items = tracks.Items
 	}
 
-	return tracks.Items, nil
+	return items, nil
 }
 
-func (t *Myxer) createTargetPlaylist(tx database.Transaction, userUid string) (spotify.ID, error) {
+func (t *Myxer) createTargetPlaylist(tx database.Transaction, remyxUid, userUid string) (database.RemyxPlaylist, error) {
 	ctx := context.Background()
 
 	client, err := t.getClient(ctx, tx, userUid)
 	if err != nil {
-		return "", err
+		return database.RemyxPlaylist{}, err
 	}
 
 	pl, err := client.CreatePlaylistForUser(ctx, userUid, "My Remyx", "", false, false)
 	if err != nil {
-		return "", err
+		return database.RemyxPlaylist{}, err
 	}
 
-	return pl.ID, err
+	target := database.RemyxPlaylist{
+		RemyxUid:    remyxUid,
+		PlaylistUid: pl.ID,
+		UserUid:     userUid,
+	}
+	err = tx.AddTargetPlaylist(target)
+
+	return target, err
 }
 
-func (t *Myxer) updatePlaylist(tx database.Transaction, userUid string, playlistUid spotify.ID, remyxTracks []spotify.ID) error {
+func (t *Myxer) updatePlaylist(tx database.Transaction, remyxUid, userUid string, playlistUid spotify.ID, remyxTracks []spotify.ID) error {
 	ctx := context.Background()
 
 	client, err := t.getClient(ctx, tx, userUid)
@@ -198,7 +222,9 @@ func (t *Myxer) updatePlaylist(tx database.Transaction, userUid string, playlist
 	items, err := client.GetPlaylistItems(ctx, playlistUid)
 	// TODO: capsule that in a util function
 	if spErr, ok := err.(spotify.Error); ok && spErr.Status == 404 {
-		playlistUid, err = t.createTargetPlaylist(tx, userUid)
+		var newTarget database.RemyxPlaylist
+		newTarget, err = t.createTargetPlaylist(tx, remyxUid, userUid)
+		playlistUid = newTarget.PlaylistUid
 	}
 	if err != nil {
 		return err

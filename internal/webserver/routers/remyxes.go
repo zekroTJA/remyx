@@ -111,16 +111,18 @@ func (t routerRemyxes) create(ctx *gin.Context) {
 		return
 	}
 
-	pl, err := spClient.GetPlaylist(ctx.Request.Context(), req.PlaylistId)
-	if err != nil {
-		if spErr, ok := err.(spotify.Error); ok && spErr.Status == 404 {
-			ctx.JSON(http.StatusBadRequest,
-				models.Error{Message: "the specified playlist could not be found"})
-		} else {
-			ctx.JSON(http.StatusInternalServerError,
-				models.Error{Message: "failed getting playlist details", Details: err.Error()})
+	if req.PlaylistId != shared.LibraryPlaylistId {
+		_, err := spClient.GetPlaylist(ctx.Request.Context(), req.PlaylistId)
+		if err != nil {
+			if spErr, ok := err.(spotify.Error); ok && spErr.Status == 404 {
+				ctx.JSON(http.StatusBadRequest,
+					models.Error{Message: "the specified playlist could not be found"})
+			} else {
+				ctx.JSON(http.StatusInternalServerError,
+					models.Error{Message: "failed getting playlist details", Details: err.Error()})
+			}
+			return
 		}
-		return
 	}
 
 	token := ctx.MustGet("token").(*oauth2.Token)
@@ -158,7 +160,7 @@ func (t routerRemyxes) create(ctx *gin.Context) {
 
 	err = tx.AddSourcePlaylist(database.RemyxPlaylist{
 		RemyxUid:    rmx.Uid,
-		PlaylistUid: pl.ID,
+		PlaylistUid: req.PlaylistId,
 		UserUid:     me.ID,
 	})
 	if err != nil {
@@ -230,21 +232,23 @@ func (t routerRemyxes) connect(ctx *gin.Context) {
 		return
 	}
 
-	pl, err := spClient.GetPlaylist(ctx.Request.Context(), req.PlaylistId)
-	if err != nil {
-		if spErr, ok := err.(spotify.Error); ok && spErr.Status == 404 {
-			ctx.JSON(http.StatusBadRequest,
-				models.Error{Message: "the specified playlist could not be found"})
-		} else {
-			ctx.JSON(http.StatusInternalServerError,
-				models.Error{Message: "failed getting playlist details", Details: err.Error()})
+	if req.PlaylistId != shared.LibraryPlaylistId {
+		_, err := spClient.GetPlaylist(ctx.Request.Context(), req.PlaylistId)
+		if err != nil {
+			if spErr, ok := err.(spotify.Error); ok && spErr.Status == 404 {
+				ctx.JSON(http.StatusBadRequest,
+					models.Error{Message: "the specified playlist could not be found"})
+			} else {
+				ctx.JSON(http.StatusInternalServerError,
+					models.Error{Message: "failed getting playlist details", Details: err.Error()})
+			}
+			return
 		}
-		return
 	}
 
 	err = tx.AddSourcePlaylist(database.RemyxPlaylist{
 		RemyxUid:    rmx.Uid,
-		PlaylistUid: pl.ID,
+		PlaylistUid: req.PlaylistId,
 		UserUid:     me.ID,
 	})
 	if err != nil {

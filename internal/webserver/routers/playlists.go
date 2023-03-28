@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/zekrotja/remyx/internal/shared"
 	"github.com/zekrotja/remyx/internal/webserver/models"
 	"github.com/zekrotja/remyx/internal/webserver/util"
 	"github.com/zmb3/spotify/v2"
@@ -34,7 +35,11 @@ func (t routerPlaylists) list(ctx *gin.Context) {
 		return
 	}
 
-	resp := make([]models.Playlist, 0, len(page.Playlists))
+	resp := make([]models.Playlist, 0, len(page.Playlists)+1)
+	resp = append(resp, models.Playlist{
+		Uid:  shared.LibraryPlaylistId,
+		Name: shared.LibraryPlaylistName,
+	})
 	for _, pl := range page.Playlists {
 		rpl := models.Playlist{
 			Uid:         pl.ID,
