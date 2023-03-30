@@ -12,7 +12,7 @@ func Run(mxr *myxer.Myxer) {
 	s := cron.New()
 
 	// TODO: make the schedule configurable
-	s.AddFunc("0 0 * * *", func() {
+	s.AddFunc("0 0 0 * * *", func() {
 		err := mxr.ScheduleSyncs()
 		if err != nil {
 			log.Error().Err(err).Msg("auto-sync failed")
