@@ -110,7 +110,11 @@ func (t routerRemyxes) create(ctx *gin.Context) {
 		return
 	}
 
-	// TODO: add validation for req.Head
+	if req.Head < 1 || req.Head > 50 {
+		ctx.JSON(http.StatusBadRequest,
+			models.Error{Message: "head count must be in range (0, 50]"})
+		return
+	}
 
 	client := ctx.MustGet("client").(*http.Client)
 	spClient := spotify.New(client)
