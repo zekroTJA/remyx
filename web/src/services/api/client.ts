@@ -1,4 +1,4 @@
-import { Playlist, Remyx, RemyxCreateResponse } from "./models";
+import { MyRemyxes, Playlist, Remyx, RemyxCreateResponse } from "./models";
 
 import { APIError } from "./errors";
 
@@ -17,12 +17,16 @@ export class Client {
     return this.req("GET", `remyxes/${id}`);
   }
 
-  remyxes(): Promise<Remyx[]> {
+  remyxes(): Promise<MyRemyxes> {
     return this.req("GET", "remyxes");
   }
 
-  createRemyx(playlist_id: string, head: number): Promise<RemyxCreateResponse> {
-    return this.req("POST", "remyxes/create", { playlist_id, head });
+  createRemyx(
+    playlist_id: string,
+    head: number,
+    name?: string
+  ): Promise<RemyxCreateResponse> {
+    return this.req("POST", "remyxes/create", { playlist_id, name, head });
   }
 
   connectRemyx(id: string, playlist_id: string): Promise<RemyxCreateResponse> {

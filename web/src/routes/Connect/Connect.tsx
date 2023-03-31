@@ -2,41 +2,75 @@ import { Component, For, createEffect, createSignal } from "solid-js";
 import { Playlist, Remyx } from "../../services/api/models";
 import { useNavigate, useParams } from "@solidjs/router";
 
+import { Pager } from "../../components/Pager/Pager";
+import { RouteContainer } from "../../components/RouteContainer/RouteContainer";
 import styles from "./Connect.module.scss";
 import { useApi } from "../../hooks/useApi";
+
+const PAGE_SIZE = 10;
 
 export const Connect: Component = () => {
   const fetch = useApi();
   const nav = useNavigate();
-  const [playlists, setPlaylists] = createSignal<Playlist[]>();
   const { id } = useParams();
+  const [playlists, setPlaylists] = createSignal<Playlist[]>();
+  const [selected, setSelected] = createSignal<string>();
+  const [page, setPage] = createSignal(0);
 
   createEffect(() => {
-    fetch((c) => c.playlists(100)).then((r) => setPlaylists(r));
+    fetch((c) => c.playlists(PAGE_SIZE, page() * PAGE_SIZE)).then((r) =>
+      setPlaylists(r)
+    );
   });
 
-  const connectRemyx = (playlistid: string) => {
-    if (!id) return;
-    fetch((c) => c.connectRemyx(id, playlistid)).then(() => nav("/"));
+  const _connectRemyx = () => {
+    const playlist_id = selected();
+    if (!playlist_id) return;
+    fetch((c) => c.connectRemyx(id, playlist_id)).then(() => nav("/"));
+  };
+
+  const _selectPlaylist = (uid: string) => {
+    if (selected() === uid) setSelected(undefined);
+    else setSelected(uid);
   };
 
   return (
-    <div class={styles.container}>
-      <section>
-        <label>Playlist</label>
-        <div class={styles.list}>
-          <For
-            each={playlists()}
-            fallback={<>Seems like you have no playlists.</>}
-          >
-            {(item) => (
-              <button onClick={() => connectRemyx(item.uid)}>
-                {item.name}
-              </button>
-            )}
-          </For>
-        </div>
-      </section>
-    </div>
+    <RouteContainer>
+      <div class={styles.container}>
+        <h2>Connect</h2>
+        <section>
+          <div class="playlistList">
+            <For
+              each={playlists()}
+              fallback={<>Seems like you have no playlists.</>}
+            >
+              {(item) => (
+                <button
+                  class={selected() === item.uid ? "selected" : ""}
+                  onClick={() => _selectPlaylist(item.uid)}
+                >
+                  {item.name}
+                </button>
+              )}
+            </For>
+          </div>
+          <Pager
+            page={page()}
+            setPage={setPage}
+            hasNext={(playlists()?.length ?? 0) >= PAGE_SIZE}
+          />
+        </section>
+        <button
+          class="button"
+          disabled={!selected()}
+          onClick={_connectRemyx}
+          title={
+            !selected() ? "Please select a playlist to create a remyx." : ""
+          }
+        >
+          Connect
+        </button>
+      </div>
+    </RouteContainer>
   );
 };

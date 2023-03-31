@@ -1,0 +1,10 @@
+.container {
+  display: flex;
+  justify-content: center;
+  padding: 2em 0;
+
+  > div {
+    width: 100%;
+    max-width: 30em;
+  }
+}

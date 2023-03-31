@@ -1,0 +1,28 @@
+@import "../../colors.scss";
+
+.pager {
+  margin-top: 1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+  font-size: 0.8em;
+
+  > button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5em;
+    border-radius: 8px;
+    background-color: rgba(255 255 255 / 5%);
+    color: $c-text;
+    font-size: inherit;
+    gap: 0.3em;
+    border: none;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.5;
+    }
+  }
+}

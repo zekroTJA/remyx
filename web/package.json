@@ -12,7 +12,8 @@
   "devDependencies": {
     "typescript": "^4.9.5",
     "vite": "^4.1.1",
-    "vite-plugin-solid": "^2.5.0"
+    "vite-plugin-solid": "^2.5.0",
+    "vite-plugin-svgr-component": "^1.0.1"
   },
   "dependencies": {
     "@solidjs/router": "^0.8.2",

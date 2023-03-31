@@ -20,7 +20,13 @@ export type Entity = {
 export type Remyx = Entity & {
   creator_uid: string;
   head: number;
+  name?: string;
   playlist_count?: number;
   expires?: string;
   playlists?: Playlist[];
+};
+
+export type MyRemyxes = {
+  created: Remyx[];
+  connected: Remyx[];
 };

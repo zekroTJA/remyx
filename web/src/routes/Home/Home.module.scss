@@ -1,4 +1,29 @@
+@import "../../colors.scss";
+
 .list {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+
+  > * {
+    background-color: rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    padding: 0.5em;
+    border-radius: 8px;
+    text-decoration: none;
+    color: $c-text;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
+
+.createButton {
+  margin-top: 2em;
+}
+
+.idPlaceholder {
+  opacity: 0.8;
+  font-style: italic;
 }
