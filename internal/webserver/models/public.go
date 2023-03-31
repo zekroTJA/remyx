@@ -19,6 +19,7 @@ type Playlist struct {
 type RemyxCreateRequest struct {
 	PlaylistId spotify.ID `json:"playlist_id"`
 	Head       int        `json:"head"`
+	Name       *string    `json:"name"`
 }
 
 type RemyxCreateResponse struct {
@@ -40,4 +41,9 @@ type RemyxWithPlaylists struct {
 	database.Remyx
 
 	Playlists []Playlist `json:"playlists"`
+}
+
+type MyRemyxesResponse struct {
+	Created   []RemyxWithCount `json:"created"`
+	Connected []RemyxWithCount `json:"connected"`
 }

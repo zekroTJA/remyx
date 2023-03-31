@@ -52,12 +52,23 @@ func (t *routerRemyxes) listMine(ctx *gin.Context) {
 		return
 	}
 
-	res := make([]models.RemyxWithCount, 0, len(rmxs))
+	res := models.MyRemyxesResponse{
+		Created:   make([]models.RemyxWithCount, 0, len(rmxs)),
+		Connected: make([]models.RemyxWithCount, 0, len(rmxs)),
+	}
+
 	for _, rmx := range rmxs {
-		res = append(res, models.RemyxWithCount{
-			RemyxWithCount: rmx,
-			Expires:        rmx.CreatedAt.Add(shared.RemyxExpiry),
-		})
+		if rmx.CreatorUid == me.ID {
+			res.Created = append(res.Created, models.RemyxWithCount{
+				RemyxWithCount: rmx,
+				Expires:        rmx.CreatedAt.Add(shared.RemyxExpiry),
+			})
+		} else {
+			res.Connected = append(res.Connected, models.RemyxWithCount{
+				RemyxWithCount: rmx,
+				Expires:        rmx.CreatedAt.Add(shared.RemyxExpiry),
+			})
+		}
 	}
 
 	ctx.JSON(http.StatusOK, res)
@@ -150,6 +161,7 @@ func (t routerRemyxes) create(ctx *gin.Context) {
 		Entity:     database.NewEntity(),
 		CreatorUid: me.ID,
 		Head:       req.Head,
+		Name:       req.Name,
 	}
 	err = tx.AddRemyx(rmx)
 	if err != nil {

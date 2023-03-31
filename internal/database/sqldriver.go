@@ -40,8 +40,8 @@ func (t *SQLDriver) Close() error {
 func (t *SQLDriver) AddRemyx(link Remyx) error {
 	_, err := t.b.
 		Insert("remyx").
-		Columns("uid", "creator_uid", "head", "created_at").
-		Values(&link.Uid, &link.CreatorUid, &link.Head, &link.CreatedAt).
+		Columns("uid", "creator_uid", "head", "created_at", "name").
+		Values(&link.Uid, &link.CreatorUid, &link.Head, &link.CreatedAt, &link.Name).
 		Exec()
 	return err
 }
@@ -57,21 +57,24 @@ func (t *SQLDriver) DeleteRemyx(uid string) error {
 func (t *SQLDriver) GetRemyx(uid string) (Remyx, error) {
 	var l Remyx
 	err := t.b.
-		Select("uid", "head", "creator_uid", "created_at").
+		Select("uid", "head", "creator_uid", "created_at", "name").
 		From("remyx").
 		Where(sq.Eq{"uid": uid}).
-		Scan(&l.Uid, &l.Head, &l.CreatorUid, &l.CreatedAt)
+		Scan(&l.Uid, &l.Head, &l.CreatorUid, &l.CreatedAt, &l.Name)
 	return l, t.wrapErr(err)
 }
 
 func (t *SQLDriver) ListRemyxes(userId string) ([]RemyxWithCount, error) {
 	var cond any
 	if userId != "" {
-		cond = sq.Eq{"creator_uid": userId}
+		cond = sq.Or{
+			sq.Eq{"creator_uid": userId},
+			sq.Eq{"source_playlist.user_uid": userId},
+		}
 	}
 
 	rows, err := t.b.
-		Select("remyx.uid", "created_at", "creator_uid", "head", "COUNT(playlist_uid)").
+		Select("remyx.uid", "created_at", "creator_uid", "head", "name", "COUNT(playlist_uid)").
 		From("remyx").
 		Join("source_playlist ON remyx.uid = source_playlist.remyx_uid").
 		Where(cond).
@@ -82,7 +85,7 @@ func (t *SQLDriver) ListRemyxes(userId string) ([]RemyxWithCount, error) {
 	}
 
 	return scanRows(rows, func(v *RemyxWithCount) []any {
-		return []any{&v.Uid, &v.CreatedAt, &v.CreatorUid, &v.Head, &v.PlaylistCount}
+		return []any{&v.Uid, &v.CreatedAt, &v.CreatorUid, &v.Head, &v.Name, &v.PlaylistCount}
 	})
 }
 

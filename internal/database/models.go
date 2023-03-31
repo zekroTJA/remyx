@@ -15,8 +15,9 @@ type Entity struct {
 type Remyx struct {
 	Entity
 
-	CreatorUid string `json:"creator_uid"`
-	Head       int    `json:"head"`
+	CreatorUid string  `json:"creator_uid"`
+	Head       int     `json:"head"`
+	Name       *string `json:"name"`
 }
 
 type RemyxWithCount struct {
