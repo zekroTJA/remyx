@@ -91,6 +91,9 @@ input {
   gap: 0.5em;
 
   > * {
+    display: flex;
+    gap: 0.5em;
+    align-items: center;
     background-color: rgba(255, 255, 255, 0.05);
     cursor: pointer;
     padding: 0.5em;
@@ -107,5 +110,13 @@ input {
 
   button.selected {
     outline: solid 2px $c-accent;
+  }
+
+  .owner {
+    font-size: 0.8em;
+    padding: 0.1em 0.5em;
+    border-radius: 3px;
+    opacity: 0.8;
+    background-color: rgba(255 255 255 / 8%);
   }
 }

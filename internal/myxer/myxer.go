@@ -160,11 +160,18 @@ func (t *Myxer) GetPlaylistInfo(ctx context.Context, playlists []database.RemyxP
 		if err != nil {
 			return nil, err
 		}
+
+		user, err := client.CurrentUser(ctx)
+		if err != nil {
+			return nil, err
+		}
+
 		for _, plID := range playlists {
 			if plID == shared.LibraryPlaylistId {
 				mappedPlaylists[plID] = &spotify.SimplePlaylist{
-					ID:   plID,
-					Name: shared.LibraryPlaylistName,
+					ID:    plID,
+					Name:  shared.LibraryPlaylistName,
+					Owner: user.User,
 				}
 				continue
 			}
@@ -172,7 +179,8 @@ func (t *Myxer) GetPlaylistInfo(ctx context.Context, playlists []database.RemyxP
 			pl, err := client.GetPlaylist(ctx, plID)
 			if err != nil {
 				mappedPlaylists[plID] = &spotify.SimplePlaylist{
-					ID: plID,
+					ID:    plID,
+					Owner: user.User,
 				}
 				continue
 			}

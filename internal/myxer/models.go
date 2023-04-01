@@ -9,6 +9,7 @@ type Playlist struct {
 	URL         string     `json:"url"`
 	ImageUrl    string     `json:"image_url"`
 	NTracks     uint       `json:"n_tracks"`
+	OwnerName   string     `json:"owner_name,omitempty"`
 }
 
 func PlaylistFromSimplePlaylist(pl *spotify.SimplePlaylist) Playlist {
@@ -18,9 +19,12 @@ func PlaylistFromSimplePlaylist(pl *spotify.SimplePlaylist) Playlist {
 		Description: pl.Description,
 		URL:         string(pl.URI),
 		NTracks:     pl.Tracks.Total,
+		OwnerName:   pl.Owner.DisplayName,
 	}
+
 	if len(pl.Images) > 0 {
 		rpl.ImageUrl = pl.Images[0].URL
 	}
+
 	return rpl
 }

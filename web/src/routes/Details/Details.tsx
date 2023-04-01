@@ -55,9 +55,19 @@ export const Details: Component = () => {
           </section>
           <button class="button">Save Changes</button>
           <section>
-            <For each={remyx()?.playlists}>
-              {(item) => <div>{item.name}</div>}
-            </For>
+            <h3>Playlists</h3>
+            <div class="playlistList">
+              <For each={remyx()?.playlists}>
+                {(item) => (
+                  <div>
+                    <span>{item.name}</span>
+                    {item.owner_name && (
+                      <span class="owner">{item.owner_name}</span>
+                    )}
+                  </div>
+                )}
+              </For>
+            </div>
           </section>
         </Show>
       </div>
