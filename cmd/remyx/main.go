@@ -62,7 +62,10 @@ func main() {
 
 	mxr := myxer.New(db, auth)
 
-	scheduler.Run(mxr)
+	err = scheduler.Run(mxr, cfg)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed registering schedules")
+	}
 
 	log.Info().Field("addr", cfg.Webserver.BindAddress).Msg("Starting web server ...")
 	go func() {

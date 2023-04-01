@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/zekrotja/remyx/internal/myxer"
 	"github.com/zekrotja/remyx/internal/shared"
 	"github.com/zekrotja/remyx/internal/webserver/models"
 	"github.com/zekrotja/remyx/internal/webserver/util"
@@ -35,23 +36,13 @@ func (t routerPlaylists) list(ctx *gin.Context) {
 		return
 	}
 
-	resp := make([]models.Playlist, 0, len(page.Playlists)+1)
-	resp = append(resp, models.Playlist{
+	resp := make([]myxer.Playlist, 0, len(page.Playlists)+1)
+	resp = append(resp, myxer.Playlist{
 		Uid:  shared.LibraryPlaylistId,
 		Name: shared.LibraryPlaylistName,
 	})
 	for _, pl := range page.Playlists {
-		rpl := models.Playlist{
-			Uid:         pl.ID,
-			Name:        pl.Name,
-			Description: pl.Description,
-			URL:         string(pl.URI),
-			NTracks:     pl.Tracks.Total,
-		}
-		if len(pl.Images) > 0 {
-			rpl.ImageUrl = pl.Images[0].URL
-		}
-		resp = append(resp, rpl)
+		resp = append(resp, myxer.PlaylistFromSimplePlaylist(&pl))
 	}
 
 	ctx.JSON(http.StatusOK, resp)

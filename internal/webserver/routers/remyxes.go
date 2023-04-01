@@ -89,16 +89,23 @@ func (t routerRemyxes) get(ctx *gin.Context) {
 		return
 	}
 
-	// sources, err := t.db.GetSourcePlaylists(rmx.Uid)
-	// if err != nil {
-	// 	ctx.JSON(http.StatusInternalServerError,
-	// 		models.Error{Message: "failed getting remyx sources", Details: err.Error()})
+	sources, err := t.db.GetSourcePlaylists(rmx.Uid)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError,
+			models.Error{Message: "failed getting remyx sources", Details: err.Error()})
+		return
+	}
 
-	// 	return
-	// }
+	pls, err := t.mxr.GetPlaylistInfo(ctx.Request.Context(), sources)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError,
+			models.Error{Message: "failed getting remyx sources info", Details: err.Error()})
+		return
+	}
 
 	res := models.RemyxWithPlaylists{
-		Remyx: rmx,
+		Remyx:     rmx,
+		Playlists: pls,
 	}
 
 	ctx.JSON(http.StatusOK, res)

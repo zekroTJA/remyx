@@ -24,3 +24,4 @@ go.work
 bin/
 .env
 .tokencache
+push.sh

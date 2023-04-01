@@ -117,7 +117,7 @@ func (t *Myxer) Sync(remyxUid string) error {
 			}
 		}
 		if !contained {
-			newTarget, err := t.createTargetPlaylist(tx, rmx.Uid, source.UserUid)
+			newTarget, err := t.createTargetPlaylist(tx, rmx, source.UserUid)
 			if err != nil {
 				return err
 			}
@@ -126,7 +126,7 @@ func (t *Myxer) Sync(remyxUid string) error {
 	}
 
 	for _, target := range targets {
-		err = t.updatePlaylist(tx, rmx.Uid, target.UserUid, target.PlaylistUid, remyxedTracks)
+		err = t.updatePlaylist(tx, rmx, target.UserUid, target.PlaylistUid, remyxedTracks)
 		if err != nil {
 			return err
 		}
@@ -135,7 +135,40 @@ func (t *Myxer) Sync(remyxUid string) error {
 	return tx.Commit()
 }
 
-func (t *Myxer) getClient(ctx context.Context, tx database.Transaction, userUid string) (*spotify.Client, error) {
+func (t *Myxer) GetPlaylistInfo(ctx context.Context, playlists []database.RemyxPlaylist) ([]Playlist, error) {
+	byCreator := make(map[string][]spotify.ID)
+	for _, pl := range playlists {
+		byCreator[pl.UserUid] = append(byCreator[pl.UserUid], pl.PlaylistUid)
+	}
+
+	mappedPlaylists := make(map[spotify.ID]*spotify.SimplePlaylist)
+	for userID, playlists := range byCreator {
+		client, err := t.getClient(ctx, t.db, userID)
+		if err != nil {
+			return nil, err
+		}
+		for _, plID := range playlists {
+			pl, err := client.GetPlaylist(ctx, plID)
+			if err != nil {
+				mappedPlaylists[plID] = &spotify.SimplePlaylist{
+					ID: plID,
+				}
+				continue
+			}
+			mappedPlaylists[plID] = &pl.SimplePlaylist
+		}
+	}
+
+	hydrated := make([]Playlist, 0, len(playlists))
+	for _, pl := range playlists {
+		hpl := mappedPlaylists[pl.PlaylistUid]
+		hydrated = append(hydrated, PlaylistFromSimplePlaylist(hpl))
+	}
+
+	return hydrated, nil
+}
+
+func (t *Myxer) getClient(ctx context.Context, tx database.Database, userUid string) (*spotify.Client, error) {
 	session, err := tx.GetSessionByUserId(userUid)
 	if err != nil {
 		return nil, err
@@ -187,7 +220,7 @@ func (t *Myxer) getSongs(
 	return items, nil
 }
 
-func (t *Myxer) createTargetPlaylist(tx database.Transaction, remyxUid, userUid string) (database.RemyxPlaylist, error) {
+func (t *Myxer) createTargetPlaylist(tx database.Transaction, rmx database.Remyx, userUid string) (database.RemyxPlaylist, error) {
 	ctx := context.Background()
 
 	client, err := t.getClient(ctx, tx, userUid)
@@ -195,13 +228,17 @@ func (t *Myxer) createTargetPlaylist(tx database.Transaction, remyxUid, userUid 
 		return database.RemyxPlaylist{}, err
 	}
 
-	pl, err := client.CreatePlaylistForUser(ctx, userUid, "My Remyx", "", false, false)
+	plName := "My Remyx"
+	if rmx.Name != nil {
+		plName = *rmx.Name
+	}
+	pl, err := client.CreatePlaylistForUser(ctx, userUid, plName, "", false, false)
 	if err != nil {
 		return database.RemyxPlaylist{}, err
 	}
 
 	target := database.RemyxPlaylist{
-		RemyxUid:    remyxUid,
+		RemyxUid:    rmx.Uid,
 		PlaylistUid: pl.ID,
 		UserUid:     userUid,
 	}
@@ -210,7 +247,7 @@ func (t *Myxer) createTargetPlaylist(tx database.Transaction, remyxUid, userUid 
 	return target, err
 }
 
-func (t *Myxer) updatePlaylist(tx database.Transaction, remyxUid, userUid string, playlistUid spotify.ID, remyxTracks []spotify.ID) error {
+func (t *Myxer) updatePlaylist(tx database.Transaction, rmx database.Remyx, userUid string, playlistUid spotify.ID, remyxTracks []spotify.ID) error {
 	ctx := context.Background()
 
 	client, err := t.getClient(ctx, tx, userUid)
@@ -220,11 +257,16 @@ func (t *Myxer) updatePlaylist(tx database.Transaction, remyxUid, userUid string
 
 	// TODO: make this paged
 	items, err := client.GetPlaylistItems(ctx, playlistUid)
-	// TODO: capsule that in a util function
 	if spErr, ok := err.(spotify.Error); ok && spErr.Status == 404 {
-		var newTarget database.RemyxPlaylist
-		newTarget, err = t.createTargetPlaylist(tx, remyxUid, userUid)
-		playlistUid = newTarget.PlaylistUid
+		err = tx.DeleteTargetPlaylist(rmx.Uid, userUid)
+		if err != nil {
+			return err
+		}
+		pl, err := t.createTargetPlaylist(tx, rmx, userUid)
+		if err != nil {
+			return err
+		}
+		return t.updatePlaylist(tx, rmx, userUid, pl.PlaylistUid, remyxTracks)
 	}
 	if err != nil {
 		return err

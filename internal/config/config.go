@@ -10,6 +10,8 @@ type Config struct {
 	LogLevel level.Level `default:"5"`
 	Debug    bool        `default:"false"`
 
+	SyncSchedule string `default:"0 0 0 * * *"`
+
 	Database  DatabaseConfig
 	Webserver WebserverConfig
 	Oauth     OauthConfig
