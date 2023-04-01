@@ -12,7 +12,6 @@ func Run(mxr *myxer.Myxer, cfg config.Config) error {
 
 	s := cron.New()
 
-	// TODO: make the schedule configurable
 	err := s.AddFunc(cfg.SyncSchedule, func() {
 		err := mxr.ScheduleSyncs()
 		if err != nil {

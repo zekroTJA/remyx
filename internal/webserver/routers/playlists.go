@@ -25,6 +25,15 @@ func (t routerPlaylists) list(ctx *gin.Context) {
 	offset := util.QueryInt(ctx, "offset", 0, 0)
 	limit := util.QueryInt(ctx, "limit", 20, 1, 50)
 
+	addLibraryPlaylist := false
+
+	if offset <= 0 {
+		addLibraryPlaylist = true
+		limit--
+	} else {
+		offset--
+	}
+
 	page, err := spotify.New(client).
 		CurrentUsersPlaylists(ctx.Request.Context(),
 			spotify.Offset(offset),
@@ -37,10 +46,14 @@ func (t routerPlaylists) list(ctx *gin.Context) {
 	}
 
 	resp := make([]myxer.Playlist, 0, len(page.Playlists)+1)
-	resp = append(resp, myxer.Playlist{
-		Uid:  shared.LibraryPlaylistId,
-		Name: shared.LibraryPlaylistName,
-	})
+
+	if addLibraryPlaylist {
+		resp = append(resp, myxer.Playlist{
+			Uid:  shared.LibraryPlaylistId,
+			Name: shared.LibraryPlaylistName,
+		})
+	}
+
 	for _, pl := range page.Playlists {
 		resp = append(resp, myxer.PlaylistFromSimplePlaylist(&pl))
 	}
