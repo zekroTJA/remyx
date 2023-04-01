@@ -29,6 +29,10 @@ export class Client {
     return this.req("POST", "remyxes/create", { playlist_id, name, head });
   }
 
+  updateRemyx(id: string, name?: string, head?: number): Promise<Remyx> {
+    return this.req("POST", `remyxes/${id}`, { name, head });
+  }
+
   connectRemyx(id: string, playlist_id: string): Promise<RemyxCreateResponse> {
     return this.req("POST", `remyxes/connect/${id}`, { playlist_id });
   }

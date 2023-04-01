@@ -22,6 +22,11 @@ export const Details: Component = () => {
     setRemyx(n);
   };
 
+  const _update = () => {
+    if (!id) return;
+    fetch((c) => c.updateRemyx(id, remyx()?.name, remyx()?.head));
+  };
+
   return (
     <RouteContainer>
       <div class={styles.container}>
@@ -53,9 +58,24 @@ export const Details: Component = () => {
               }
             />
           </section>
-          <button class="button">Save Changes</button>
           <section>
-            <h3>Playlists</h3>
+            <label for="iHead">Song Count (per Source Playlist)</label>
+            <input
+              id="iHead"
+              type="number"
+              min="0"
+              max="50"
+              value={remyx()?.head ?? 20}
+              onInput={(e) =>
+                _setRemyx({ head: parseInt(e.currentTarget.value) })
+              }
+            />
+          </section>
+          <button class="button" onClick={_update}>
+            Save Changes
+          </button>
+          <section>
+            <h3>Source Playlists</h3>
             <div class="playlistList">
               <For each={remyx()?.playlists}>
                 {(item) => (
