@@ -33,6 +33,10 @@ export class Client {
     return this.req("POST", `remyxes/${id}`, { name, head });
   }
 
+  deleteRemyx(id: string): Promise<{}> {
+    return this.req("DELETE", `remyxes/${id}`);
+  }
+
   connectRemyx(id: string, playlist_id: string): Promise<RemyxCreateResponse> {
     return this.req("POST", `remyxes/connect/${id}`, { playlist_id });
   }
@@ -52,7 +56,7 @@ export class Client {
       throw new APIError(res, res.status, res.statusText);
     }
 
-    if (res.status != 203) {
+    if (res.status != 204) {
       return await res.json();
     }
 

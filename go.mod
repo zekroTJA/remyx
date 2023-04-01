@@ -16,7 +16,10 @@ require (
 	golang.org/x/oauth2 v0.0.0-20210810183815-faf39c7919d5
 )
 
-require github.com/gin-gonic/contrib v0.0.0-20221130124618-7e01895a63f2 // indirect
+require (
+	github.com/gin-contrib/cors v1.4.0 // indirect
+	github.com/gin-gonic/contrib v0.0.0-20221130124618-7e01895a63f2 // indirect
+)
 
 require (
 	github.com/Masterminds/squirrel v1.5.4

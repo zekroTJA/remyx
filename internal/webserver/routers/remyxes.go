@@ -28,6 +28,7 @@ func Remyxes(rg *gin.RouterGroup, db database.Database, mxr *myxer.Myxer) {
 	rg.POST("/connect/:id", r.connect)
 	rg.GET("/:id", r.get)
 	rg.POST("/:id", r.update)
+	rg.DELETE("/:id", r.delete)
 }
 
 func (t *routerRemyxes) listMine(ctx *gin.Context) {
@@ -110,68 +111,6 @@ func (t routerRemyxes) get(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, res)
-}
-
-func (t routerRemyxes) update(ctx *gin.Context) {
-	var req models.RemyxUpdateRequest
-	if err := ctx.BindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest,
-			models.Error{Message: "invalid json body", Details: err})
-		return
-	}
-
-	id := ctx.Param("id")
-
-	tx, err := t.db.BeginTx()
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError,
-			models.Error{Message: "failed creating transaction", Details: err.Error()})
-		return
-	}
-	defer tx.Rollback()
-
-	rmx, err := tx.GetRemyx(id)
-	if err != nil {
-		if err == database.ErrNotFound {
-			ctx.JSON(http.StatusNotFound,
-				models.Error{Message: "remyx with this id could not be found"})
-		} else {
-			ctx.JSON(http.StatusInternalServerError,
-				models.Error{Message: "failed getting remyx entry", Details: err.Error()})
-		}
-		return
-	}
-
-	if req.Head != nil {
-		head := *req.Head
-		if head < 1 || head > 50 {
-			ctx.JSON(http.StatusBadRequest,
-				models.Error{Message: "head count must be in range (0, 50]"})
-			return
-		}
-
-		rmx.Head = head
-	}
-
-	if req.Name != nil {
-		rmx.Name = req.Name
-	}
-
-	err = tx.UpdateRemyx(rmx)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError,
-			models.Error{Message: "failed updating remyx", Details: err.Error()})
-		return
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError,
-			models.Error{Message: "failed applying transaction", Details: err.Error()})
-		return
-	}
-
-	ctx.JSON(http.StatusOK, rmx)
 }
 
 func (t routerRemyxes) create(ctx *gin.Context) {
@@ -268,6 +207,122 @@ func (t routerRemyxes) create(ctx *gin.Context) {
 		Uid:     rmx.Uid,
 		Expires: rmx.CreatedAt.Add(shared.RemyxExpiry),
 	})
+}
+
+func (t routerRemyxes) update(ctx *gin.Context) {
+	var req models.RemyxUpdateRequest
+	if err := ctx.BindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest,
+			models.Error{Message: "invalid json body", Details: err})
+		return
+	}
+
+	id := ctx.Param("id")
+
+	tx, err := t.db.BeginTx()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError,
+			models.Error{Message: "failed creating transaction", Details: err.Error()})
+		return
+	}
+	defer tx.Rollback()
+
+	rmx, err := tx.GetRemyx(id)
+	if err != nil {
+		if err == database.ErrNotFound {
+			ctx.JSON(http.StatusNotFound,
+				models.Error{Message: "remyx with this id could not be found"})
+		} else {
+			ctx.JSON(http.StatusInternalServerError,
+				models.Error{Message: "failed getting remyx entry", Details: err.Error()})
+		}
+		return
+	}
+
+	if req.Head != nil {
+		head := *req.Head
+		if head < 1 || head > 50 {
+			ctx.JSON(http.StatusBadRequest,
+				models.Error{Message: "head count must be in range (0, 50]"})
+			return
+		}
+
+		rmx.Head = head
+	}
+
+	if req.Name != nil {
+		rmx.Name = req.Name
+	}
+
+	err = tx.UpdateRemyx(rmx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError,
+			models.Error{Message: "failed updating remyx", Details: err.Error()})
+		return
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError,
+			models.Error{Message: "failed applying transaction", Details: err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, rmx)
+}
+
+func (t routerRemyxes) delete(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	client := ctx.MustGet("client").(*http.Client)
+	spClient := spotify.New(client)
+
+	me, err := spClient.CurrentUser(ctx.Request.Context())
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError,
+			models.Error{Message: "failed getting current user details", Details: err.Error()})
+		return
+	}
+
+	tx, err := t.db.BeginTx()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError,
+			models.Error{Message: "failed creating database transaction", Details: err.Error()})
+		return
+	}
+	defer tx.Rollback()
+
+	rmx, err := tx.GetRemyx(id)
+	if err == database.ErrNotFound {
+		ctx.JSON(http.StatusNotFound, models.Error{Message: "not found"})
+		return
+	}
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError,
+			models.Error{Message: "failed getting remyx", Details: err})
+		return
+	}
+
+	if rmx.CreatorUid != me.ID {
+		ctx.JSON(http.StatusNotFound, models.Error{Message: "not found"})
+		return
+	}
+
+	err = tx.DeleteRemyx(id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError,
+			models.Error{Message: "failed deleting remyx", Details: err})
+		return
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError,
+			models.Error{Message: "failed committing changes", Details: err.Error()})
+		return
+	}
+
+	ctx.Status(http.StatusNoContent)
 }
 
 func (t routerRemyxes) connect(ctx *gin.Context) {

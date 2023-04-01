@@ -4,6 +4,8 @@ import { MyRemyxes, Remyx } from "../../services/api/models";
 import Add from "../../assets/add";
 import { NavLink } from "@solidjs/router";
 import { RouteContainer } from "../../components/RouteContainer/RouteContainer";
+import Trashcan from "../../assets/trashcan";
+import { formatPostcssSourceMap } from "vite";
 import styles from "./Home.module.scss";
 import { useApi } from "../../hooks/useApi";
 
@@ -15,19 +17,31 @@ export const Home: Component = () => {
     fetch((c) => c.remyxes()).then((r) => setRemyxes(r));
   });
 
+  const _deleteRemyx = (e: MouseEvent, id: string) => {
+    e.preventDefault();
+    const rmx = remyxes();
+    if (!rmx) return;
+    fetch((c) => c.deleteRemyx(id)).then(() =>
+      setRemyxes({
+        ...rmx,
+        created: rmx.created.filter((r) => r.uid !== id),
+      })
+    );
+  };
+
   return (
     <RouteContainer>
       <h2>Your Remyxes</h2>
-      <div class={styles.list}>
+      <div class="playlistList">
         <For each={remyxes()?.created} fallback={<>No items</>}>
-          {(item) => <ListItem item={item} />}
+          {(item) => <ListItem item={item} onDelete={_deleteRemyx} />}
         </For>
       </div>
 
       <h2>Participating Remyxes</h2>
-      <div class={styles.list}>
+      <div class="playlistList">
         <For each={remyxes()?.connected} fallback={<>No items</>}>
-          {(item) => <ListItem item={item} />}
+          {(item) => <ListItem item={item} onDelete={() => {}} />}
         </For>
       </div>
 
@@ -39,7 +53,10 @@ export const Home: Component = () => {
   );
 };
 
-const ListItem: Component<{ item: Remyx }> = ({ item }) => {
+const ListItem: Component<{
+  item: Remyx;
+  onDelete: (e: MouseEvent, id: string) => void;
+}> = ({ item, onDelete }) => {
   return (
     <NavLink href={`/${item.uid}`}>
       {item.name ? (
@@ -47,6 +64,11 @@ const ListItem: Component<{ item: Remyx }> = ({ item }) => {
       ) : (
         <span class={styles.idPlaceholder}>{item.uid}</span>
       )}
+      <div class="controls">
+        <button onClick={(e) => onDelete(e, item.uid)}>
+          <Trashcan />
+        </button>
+      </div>
     </NavLink>
   );
 };

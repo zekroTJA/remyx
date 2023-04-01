@@ -24,12 +24,12 @@ func Run(
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 
+	if cfg.Debug {
+		router.Use(middleware.Cors("http://localhost:3000"))
+	}
+
 	api := router.Group("/api")
 	api.Use(middleware.Logger(level.Info, "WebServer"))
-
-	if cfg.Debug {
-		api.Use(middleware.Cors("http://localhost:3000"))
-	}
 
 	routers.OAuth(api.Group("/oauth"), auth, cache, cfg.Debug)
 

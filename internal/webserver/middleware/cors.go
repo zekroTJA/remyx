@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -13,8 +14,10 @@ func Cors(originUrl string) gin.HandlerFunc {
 		ctx.Header("Access-Control-Allow-Headers", "Content-Type,Cookie")
 		ctx.Header("Access-Control-Allow-Credentials", "true")
 
+		fmt.Println("check", ctx.Request.Method, ctx.Request.URL)
 		if ctx.Request.Method == http.MethodOptions {
-			ctx.Status(http.StatusOK)
+			fmt.Println("pass", ctx.Request.Method, ctx.Request.URL)
+			ctx.Status(http.StatusNoContent)
 			ctx.Abort()
 		}
 	}
