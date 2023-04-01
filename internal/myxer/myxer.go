@@ -3,9 +3,11 @@ package myxer
 import (
 	"context"
 	"errors"
+	"net/http"
 
 	"github.com/zekrotja/remyx/internal/database"
 	"github.com/zekrotja/remyx/internal/shared"
+	"github.com/zekrotja/remyx/internal/webserver/util"
 	"github.com/zekrotja/rogu/log"
 	"github.com/zmb3/spotify/v2"
 	spotifyauth "github.com/zmb3/spotify/v2/auth"
@@ -84,6 +86,17 @@ func (t *Myxer) Sync(remyxUid string) error {
 	sourceTracks := make([][]spotify.PlaylistItem, 0, len(sources))
 	for _, pl := range sources {
 		tracks, err := t.getSongs(tx, pl.UserUid, pl.PlaylistUid, rmx.Head)
+		if util.IsSpotifyError(err, http.StatusNotFound) {
+			log.Debug().Fields("rmx", remyxUid, "pl", pl.PlaylistUid).Msg("Removing source playlist")
+			err = tx.DeleteSourcePlaylist(remyxUid, string(pl.PlaylistUid))
+			if err != nil {
+				return err
+			}
+			if len(sources)-1 <= 1 {
+				log.Debug().Fields("rmx", remyxUid).Msg("Cancel sync because only one source playlist is available")
+				return tx.Commit()
+			}
+		}
 		if err != nil {
 			return err
 		}
@@ -257,7 +270,7 @@ func (t *Myxer) updatePlaylist(tx database.Transaction, rmx database.Remyx, user
 
 	// TODO: make this paged
 	items, err := client.GetPlaylistItems(ctx, playlistUid)
-	if spErr, ok := err.(spotify.Error); ok && spErr.Status == 404 {
+	if util.IsSpotifyError(err, http.StatusNotFound) {
 		err = tx.DeleteTargetPlaylist(rmx.Uid, userUid)
 		if err != nil {
 			return err
