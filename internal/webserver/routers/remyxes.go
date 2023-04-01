@@ -27,6 +27,7 @@ func Remyxes(rg *gin.RouterGroup, db database.Database, mxr *myxer.Myxer) {
 	rg.POST("/create", r.create)
 	rg.POST("/connect/:id", r.connect)
 	rg.GET("/:id", r.get)
+	rg.POST("/:id", r.update)
 }
 
 func (t *routerRemyxes) listMine(ctx *gin.Context) {
@@ -111,9 +112,73 @@ func (t routerRemyxes) get(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+func (t routerRemyxes) update(ctx *gin.Context) {
+	var req models.RemyxUpdateRequest
+	if err := ctx.BindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest,
+			models.Error{Message: "invalid json body", Details: err})
+		return
+	}
+
+	id := ctx.Param("id")
+
+	tx, err := t.db.BeginTx()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError,
+			models.Error{Message: "failed creating transaction", Details: err.Error()})
+		return
+	}
+	defer tx.Rollback()
+
+	rmx, err := tx.GetRemyx(id)
+	if err != nil {
+		if err == database.ErrNotFound {
+			ctx.JSON(http.StatusNotFound,
+				models.Error{Message: "remyx with this id could not be found"})
+		} else {
+			ctx.JSON(http.StatusInternalServerError,
+				models.Error{Message: "failed getting remyx entry", Details: err.Error()})
+		}
+		return
+	}
+
+	if req.Head != nil {
+		head := *req.Head
+		if head < 1 || head > 50 {
+			ctx.JSON(http.StatusBadRequest,
+				models.Error{Message: "head count must be in range (0, 50]"})
+			return
+		}
+
+		rmx.Head = head
+	}
+
+	if req.Name != nil {
+		rmx.Name = req.Name
+	}
+
+	err = tx.UpdateRemyx(rmx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError,
+			models.Error{Message: "failed updating remyx", Details: err.Error()})
+		return
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError,
+			models.Error{Message: "failed applying transaction", Details: err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, rmx)
+}
+
 func (t routerRemyxes) create(ctx *gin.Context) {
 	var req models.RemyxCreateRequest
 	if err := ctx.BindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest,
+			models.Error{Message: "invalid json body", Details: err})
 		return
 	}
 
@@ -210,6 +275,8 @@ func (t routerRemyxes) connect(ctx *gin.Context) {
 
 	var req models.RemyxConnectRequest
 	if err := ctx.BindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest,
+			models.Error{Message: "invalid json body", Details: err})
 		return
 	}
 

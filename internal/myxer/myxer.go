@@ -154,7 +154,12 @@ func (t *Myxer) GetPlaylistInfo(ctx context.Context, playlists []database.RemyxP
 		byCreator[pl.UserUid] = append(byCreator[pl.UserUid], pl.PlaylistUid)
 	}
 
-	mappedPlaylists := make(map[spotify.ID]*spotify.SimplePlaylist)
+	type key struct {
+		playlist spotify.ID
+		user     string
+	}
+
+	mappedPlaylists := make(map[key]*spotify.SimplePlaylist)
 	for userID, playlists := range byCreator {
 		client, err := t.getClient(ctx, t.db, userID)
 		if err != nil {
@@ -168,7 +173,7 @@ func (t *Myxer) GetPlaylistInfo(ctx context.Context, playlists []database.RemyxP
 
 		for _, plID := range playlists {
 			if plID == shared.LibraryPlaylistId {
-				mappedPlaylists[plID] = &spotify.SimplePlaylist{
+				mappedPlaylists[key{plID, userID}] = &spotify.SimplePlaylist{
 					ID:    plID,
 					Name:  shared.LibraryPlaylistName,
 					Owner: user.User,
@@ -178,20 +183,20 @@ func (t *Myxer) GetPlaylistInfo(ctx context.Context, playlists []database.RemyxP
 
 			pl, err := client.GetPlaylist(ctx, plID)
 			if err != nil {
-				mappedPlaylists[plID] = &spotify.SimplePlaylist{
+				mappedPlaylists[key{plID, userID}] = &spotify.SimplePlaylist{
 					ID:    plID,
 					Owner: user.User,
 				}
 				continue
 			}
 
-			mappedPlaylists[plID] = &pl.SimplePlaylist
+			mappedPlaylists[key{plID, userID}] = &pl.SimplePlaylist
 		}
 	}
 
 	hydrated := make([]Playlist, 0, len(playlists))
 	for _, pl := range playlists {
-		hpl := mappedPlaylists[pl.PlaylistUid]
+		hpl := mappedPlaylists[key{pl.PlaylistUid, pl.UserUid}]
 		hydrated = append(hydrated, PlaylistFromSimplePlaylist(hpl))
 	}
 

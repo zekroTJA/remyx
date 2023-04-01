@@ -14,6 +14,11 @@ type RemyxCreateRequest struct {
 	Name       *string    `json:"name"`
 }
 
+type RemyxUpdateRequest struct {
+	Head *int    `json:"head"`
+	Name *string `json:"name"`
+}
+
 type RemyxCreateResponse struct {
 	Uid     string    `json:"uid"`
 	Expires time.Time `json:"expires"`

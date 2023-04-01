@@ -37,13 +37,25 @@ func (t *SQLDriver) Close() error {
 	return errors.New("never call Close() directly on the SQLDriver instance")
 }
 
-func (t *SQLDriver) AddRemyx(link Remyx) error {
+func (t *SQLDriver) AddRemyx(rmx Remyx) error {
 	_, err := t.b.
 		Insert("remyx").
 		Columns("uid", "creator_uid", "head", "created_at", "name").
-		Values(&link.Uid, &link.CreatorUid, &link.Head, &link.CreatedAt, &link.Name).
+		Values(&rmx.Uid, &rmx.CreatorUid, &rmx.Head, &rmx.CreatedAt, &rmx.Name).
 		Exec()
 	return err
+}
+
+func (t *SQLDriver) UpdateRemyx(rmx Remyx) error {
+	_, err := t.b.
+		Update("remyx").
+		SetMap(map[string]any{
+			"head": rmx.Head,
+			"name": rmx.Name,
+		}).
+		Where(sq.Eq{"uid": rmx.Uid}).
+		Exec()
+	return t.wrapErr(err)
 }
 
 func (t *SQLDriver) DeleteRemyx(uid string) error {

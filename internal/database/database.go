@@ -8,7 +8,8 @@ type Database interface {
 	DeleteSession(uid string) error
 	GetSessionByUserId(userId string) (Session, error)
 
-	AddRemyx(link Remyx) error
+	AddRemyx(rmx Remyx) error
+	UpdateRemyx(rmx Remyx) error
 	DeleteRemyx(uid string) error
 	GetRemyx(uid string) (Remyx, error)
 	ListRemyxes(userId string) ([]RemyxWithCount, error)
