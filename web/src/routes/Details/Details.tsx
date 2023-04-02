@@ -4,6 +4,7 @@ import { Playlist, Remyx } from "../../services/api/models";
 
 import { APIError } from "../../services/api/errors";
 import ArrowLeft from "../../assets/allowleft";
+import Clipboard from "../../assets/clipboard";
 import { NotificationContext } from "../../services/notifications/notifications";
 import { RouteContainer } from "../../components/RouteContainer/RouteContainer";
 import Trashcan from "../../assets/trashcan";
@@ -64,6 +65,17 @@ export const Details: Component = () => {
     });
   };
 
+  const _copySharelink = () => {
+    navigator.clipboard
+      .writeText(`${window.location.origin}/c/${remyx()?.uid}`)
+      .then(() =>
+        show("success", "Share link has been copied to your clipboard.")
+      )
+      .catch(() =>
+        show("error", "Failed copying share link to your clipboard.")
+      );
+  };
+
   return (
     <RouteContainer>
       <div class={styles.container}>
@@ -79,7 +91,10 @@ export const Details: Component = () => {
               You can use this link to share it with your friends so they can
               collaborate on this Remyx.
             </span>
-            <span>{`${window.location.origin}/c/${remyx()?.uid}`}</span>
+            <span>
+              {`${window.location.origin}/c/${remyx()?.uid}`}
+              <Clipboard onClick={_copySharelink} />
+            </span>
           </div>
           <section>
             <label for="iName">Name</label>

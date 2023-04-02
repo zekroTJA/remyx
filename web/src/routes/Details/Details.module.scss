@@ -30,6 +30,19 @@
     &:last-child {
       color: $c-accent;
       text-decoration: underline;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+
+      > svg {
+        cursor: pointer;
+        opacity: 1;
+
+        &:hover {
+          background-color: rgba(255 255 255 / 10%);
+          border-radius: 3px;
+        }
+      }
     }
   }
 }
