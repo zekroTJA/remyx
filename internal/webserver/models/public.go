@@ -34,8 +34,15 @@ type RemyxWithCount struct {
 	Expires time.Time `json:"expires"`
 }
 
-type RemyxWithPlaylists struct {
+type Remyx struct {
 	database.Remyx
+
+	Mine    bool      `json:"mine"`
+	Expires time.Time `json:"expires"`
+}
+
+type RemyxWithPlaylists struct {
+	Remyx
 
 	Playlists []myxer.Playlist `json:"playlists"`
 }
@@ -43,4 +50,8 @@ type RemyxWithPlaylists struct {
 type MyRemyxesResponse struct {
 	Created   []RemyxWithCount `json:"created"`
 	Connected []RemyxWithCount `json:"connected"`
+}
+
+type RemyxPlaylistDeleetResponse struct {
+	RemyxDeleted bool `json:"remyx_deleted"`
 }

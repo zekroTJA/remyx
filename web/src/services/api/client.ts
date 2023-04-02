@@ -1,4 +1,10 @@
-import { MyRemyxes, Playlist, Remyx, RemyxCreateResponse } from "./models";
+import {
+  MyRemyxes,
+  Playlist,
+  Remyx,
+  RemyxCreateResponse,
+  RemyxPlaylistDeleteResponse,
+} from "./models";
 
 import { APIError } from "./errors";
 
@@ -35,6 +41,13 @@ export class Client {
 
   deleteRemyx(id: string): Promise<{}> {
     return this.req("DELETE", `remyxes/${id}`);
+  }
+
+  deleteRemyxPlaylist(
+    id: string,
+    playlistId: string
+  ): Promise<RemyxPlaylistDeleteResponse> {
+    return this.req("DELETE", `remyxes/${id}/${playlistId}`);
   }
 
   connectRemyx(id: string, playlist_id: string): Promise<RemyxCreateResponse> {

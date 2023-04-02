@@ -25,9 +25,14 @@ export type Remyx = Entity & {
   playlist_count?: number;
   expires?: string;
   playlists?: Playlist[];
+  mine?: boolean;
 };
 
 export type MyRemyxes = {
   created: Remyx[];
   connected: Remyx[];
+};
+
+export type RemyxPlaylistDeleteResponse = {
+  remyx_deleted: boolean;
 };

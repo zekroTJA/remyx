@@ -29,6 +29,7 @@ func Remyxes(rg *gin.RouterGroup, db database.Database, mxr *myxer.Myxer) {
 	rg.GET("/:id", r.get)
 	rg.POST("/:id", r.update)
 	rg.DELETE("/:id", r.delete)
+	rg.DELETE("/:id/:playlistId", r.deletePlaylist)
 }
 
 func (t *routerRemyxes) listMine(ctx *gin.Context) {
@@ -79,6 +80,16 @@ func (t *routerRemyxes) listMine(ctx *gin.Context) {
 func (t routerRemyxes) get(ctx *gin.Context) {
 	id := ctx.Param("id")
 
+	client := ctx.MustGet("client").(*http.Client)
+	spClient := spotify.New(client)
+
+	me, err := spClient.CurrentUser(ctx.Request.Context())
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError,
+			models.Error{Message: "failed getting current user details", Details: err.Error()})
+		return
+	}
+
 	rmx, err := t.db.GetRemyx(id)
 	if err != nil {
 		if err == database.ErrNotFound {
@@ -106,7 +117,11 @@ func (t routerRemyxes) get(ctx *gin.Context) {
 	}
 
 	res := models.RemyxWithPlaylists{
-		Remyx:     rmx,
+		Remyx: models.Remyx{
+			Remyx:   rmx,
+			Mine:    rmx.CreatorUid == me.ID,
+			Expires: rmx.CreatedAt.Add(shared.RemyxExpiry),
+		},
 		Playlists: pls,
 	}
 
@@ -444,5 +459,85 @@ func (t routerRemyxes) connect(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, models.RemyxCreateResponse{
 		Uid:     rmx.Uid,
 		Expires: rmx.CreatedAt.Add(shared.RemyxExpiry),
+	})
+}
+
+func (t routerRemyxes) deletePlaylist(ctx *gin.Context) {
+	id := ctx.Param("id")
+	playlistId := ctx.Param("playlistId")
+
+	client := ctx.MustGet("client").(*http.Client)
+	spClient := spotify.New(client)
+
+	me, err := spClient.CurrentUser(ctx.Request.Context())
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError,
+			models.Error{Message: "failed getting current user details", Details: err.Error()})
+		return
+	}
+
+	tx, err := t.db.BeginTx()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError,
+			models.Error{Message: "failed creating database transaction", Details: err.Error()})
+		return
+	}
+	defer tx.Rollback()
+
+	rmx, err := tx.GetRemyx(id)
+	if err != nil {
+		if err == database.ErrNotFound {
+			ctx.JSON(http.StatusNotFound,
+				models.Error{Message: "remyx with this id could not be found"})
+		} else {
+			ctx.JSON(http.StatusInternalServerError,
+				models.Error{Message: "failed getting remyx entry", Details: err.Error()})
+		}
+		return
+	}
+
+	sources, err := tx.GetSourcePlaylists(id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError,
+			models.Error{Message: "failed getting remyx sources", Details: err.Error()})
+		return
+	}
+
+	var source *database.RemyxPlaylist
+	for i := range sources {
+		if sources[i].PlaylistUid == spotify.ID(playlistId) {
+			source = &sources[i]
+		}
+	}
+	if source == nil {
+		ctx.JSON(http.StatusNotFound,
+			models.Error{Message: "source playlist not found", Details: err.Error()})
+		return
+	}
+
+	remyxDeleted := false
+	if rmx.CreatorUid == me.ID {
+		if len(sources)-1 <= 0 {
+			remyxDeleted = true
+			err = tx.DeleteRemyx(id)
+		} else {
+			err = tx.DeleteSourcePlaylist(id, playlistId)
+		}
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError,
+				models.Error{Message: "failed deleting source playlist", Details: err.Error()})
+			return
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError,
+			models.Error{Message: "failed committing changes", Details: err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, models.RemyxPlaylistDeleetResponse{
+		RemyxDeleted: remyxDeleted,
 	})
 }
