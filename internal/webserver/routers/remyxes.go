@@ -303,16 +303,41 @@ func (t routerRemyxes) delete(ctx *gin.Context) {
 		return
 	}
 
-	if rmx.CreatorUid != me.ID {
-		ctx.JSON(http.StatusNotFound, models.Error{Message: "not found"})
-		return
-	}
+	if rmx.CreatorUid == me.ID {
+		err = tx.DeleteRemyx(id)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError,
+				models.Error{Message: "failed deleting remyx", Details: err})
+			return
+		}
+	} else {
+		sources, err := tx.GetSourcePlaylists(id)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError,
+				models.Error{Message: "failed getting remyx sources", Details: err})
+			return
+		}
 
-	err = tx.DeleteRemyx(id)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError,
-			models.Error{Message: "failed deleting remyx", Details: err})
-		return
+		var mySources []database.RemyxPlaylist
+		for _, source := range sources {
+			if source.UserUid == me.ID {
+				mySources = append(mySources, source)
+			}
+		}
+
+		if len(mySources) == 0 {
+			ctx.JSON(http.StatusNotFound, models.Error{Message: "not found"})
+			return
+		}
+
+		for _, source := range mySources {
+			err = tx.DeleteSourcePlaylist(id, string(source.PlaylistUid))
+			if err != nil {
+				ctx.JSON(http.StatusInternalServerError,
+					models.Error{Message: "failed deleting remyx sources", Details: err})
+				return
+			}
+		}
 	}
 
 	err = tx.Commit()
