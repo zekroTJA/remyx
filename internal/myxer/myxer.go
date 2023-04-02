@@ -3,6 +3,7 @@ package myxer
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/zekrotja/remyx/internal/database"
@@ -13,6 +14,8 @@ import (
 	spotifyauth "github.com/zmb3/spotify/v2/auth"
 	"golang.org/x/oauth2"
 )
+
+const pageSize = 5
 
 type Myxer struct {
 	db   database.Database
@@ -43,7 +46,7 @@ func (t *Myxer) ScheduleSyncs(remyxUids ...string) error {
 		}
 	}
 
-	log.Debug().Field("n", len(remyxUids)).Msg("Schedule syncs ...")
+	log.Info().Field("n", len(remyxUids)).Msg("Schedule syncs ...")
 
 	for _, uid := range remyxUids {
 		err := t.Sync(uid)
@@ -52,7 +55,7 @@ func (t *Myxer) ScheduleSyncs(remyxUids ...string) error {
 		}
 	}
 
-	log.Debug().Field("n", len(remyxUids)).Msg("Sync scheduling finished ...")
+	log.Info().Field("n", len(remyxUids)).Msg("Sync scheduling finished ...")
 	if mErr != nil {
 		log.Error().Err(mErr).Msg("Scheduled sync failed")
 	}
@@ -282,6 +285,32 @@ func (t *Myxer) createTargetPlaylist(tx database.Transaction, rmx database.Remyx
 	return target, err
 }
 
+func (t *Myxer) getAllPlaylistItems(ctx context.Context, client *spotify.Client, playlistUid spotify.ID) ([]spotify.PlaylistItem, error) {
+	var total int
+	var res []spotify.PlaylistItem
+	var page int
+
+	for {
+		items, err := client.GetPlaylistItems(ctx, playlistUid,
+			spotify.Limit(pageSize),
+			spotify.Offset(page*pageSize))
+		if err != nil {
+			return nil, err
+		}
+		if total == 0 {
+			total = items.Total
+			res = make([]spotify.PlaylistItem, 0, total)
+		}
+		page++
+		res = append(res, items.Items...)
+		if len(res) >= total {
+			break
+		}
+	}
+
+	return res, nil
+}
+
 func (t *Myxer) updatePlaylist(tx database.Transaction, rmx database.Remyx, userUid string, playlistUid spotify.ID, remyxTracks []spotify.ID) error {
 	ctx := context.Background()
 
@@ -290,8 +319,7 @@ func (t *Myxer) updatePlaylist(tx database.Transaction, rmx database.Remyx, user
 		return err
 	}
 
-	// TODO: make this paged
-	items, err := client.GetPlaylistItems(ctx, playlistUid)
+	items, err := t.getAllPlaylistItems(ctx, client, playlistUid)
 	if util.IsSpotifyError(err, http.StatusNotFound) {
 		err = tx.DeleteTargetPlaylist(rmx.Uid, userUid)
 		if err != nil {
@@ -307,20 +335,33 @@ func (t *Myxer) updatePlaylist(tx database.Transaction, rmx database.Remyx, user
 		return err
 	}
 
-	tracks := make([]spotify.ID, 0, len(items.Items))
-	for _, item := range items.Items {
+	tracks := make([]spotify.ID, 0, len(items))
+	for _, item := range items {
 		if item.Track.Track != nil {
 			tracks = append(tracks, item.Track.Track.ID)
 		}
 	}
 
 	if len(tracks) > 0 {
-		_, err = client.RemoveTracksFromPlaylist(ctx, playlistUid, tracks...)
+		fmt.Println(len(tracks), tracks)
+		err = util.DoPaged(tracks, pageSize, func(t []spotify.ID) error {
+			log.Debug().Fields("pl", playlistUid, "n", len(t)).Msg("Removing songs from playlist ...")
+			_, err = client.RemoveTracksFromPlaylist(ctx, playlistUid, t...)
+			return err
+		})
 		if err != nil {
 			return err
 		}
 	}
 
-	_, err = client.AddTracksToPlaylist(ctx, playlistUid, remyxTracks...)
-	return err
+	err = util.DoPaged(remyxTracks, pageSize, func(t []spotify.ID) error {
+		log.Debug().Fields("pl", playlistUid, "n", len(t)).Msg("Adding songs to playlist ...")
+		_, err = client.AddTracksToPlaylist(ctx, playlistUid, t...)
+		return err
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

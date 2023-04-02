@@ -26,3 +26,22 @@ func QueryInt(ctx *gin.Context, key string, def int, minMax ...int) int {
 
 	return vi
 }
+
+func DoPaged[T any](s []T, ps int, f func([]T) error) (err error) {
+	pages := len(s) / ps
+	if len(s)%ps > 0 {
+		pages++
+	}
+
+	for i := 0; i < pages; i++ {
+		c := s[i*ps:]
+		if i < pages-1 {
+			c = c[:ps]
+		}
+		if err = f(c); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
