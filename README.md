@@ -9,7 +9,7 @@ Remyx is a simple web app which lets you create Spotify playlists with your frie
 If you want to try it yourself, feel free to test it out at [remyx.zekro.de](https://remyx.zekro.de).
 
 > **Warning**  
-> But watch out, this app is still in a very early stage of development and bugs are to expect!
+> But watch out, this app is still in a very early stage of development and bugs are to be expected!
 
 ## Why not just use blends?
 
