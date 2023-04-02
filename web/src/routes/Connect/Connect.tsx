@@ -26,7 +26,7 @@ export const Connect: Component = () => {
   const _connectRemyx = () => {
     const playlist_id = selected();
     if (!playlist_id) return;
-    fetch((c) => c.connectRemyx(id, playlist_id)).then(() => nav("/"));
+    fetch((c) => c.connectRemyx(id, playlist_id)).then(() => nav(`/${id}`));
   };
 
   const _selectPlaylist = (uid: string) => {

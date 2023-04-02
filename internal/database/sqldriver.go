@@ -137,13 +137,18 @@ func (t *SQLDriver) AddSourcePlaylist(pl RemyxPlaylist) error {
 	return t.wrapErr(err)
 }
 
-func (t *SQLDriver) DeleteSourcePlaylist(remyxUid, playlistUid string) error {
+func (t *SQLDriver) DeleteSourcePlaylist(remyxUid, userUid, playlistUid string) error {
+	cond := sq.And{
+		sq.Eq{"remyx_uid": remyxUid},
+		sq.Eq{"playlist_uid": playlistUid},
+	}
+	if userUid != "" {
+		cond = append(cond, sq.Eq{"user_uid": userUid})
+	}
+
 	_, err := t.b.
 		Delete("source_playlist").
-		Where(sq.And{
-			sq.Eq{"remyx_uid": remyxUid},
-			sq.Eq{"playlist_uid": playlistUid},
-		}).
+		Where(cond).
 		Exec()
 	return t.wrapErr(err)
 }

@@ -1,8 +1,8 @@
 import { Component, For, Show, createEffect, createSignal } from "solid-js";
 import { NavLink, useNavigate, useParams } from "@solidjs/router";
+import { Playlist, Remyx } from "../../services/api/models";
 
 import ArrowLeft from "../../assets/allowleft";
-import { Remyx } from "../../services/api/models";
 import { RouteContainer } from "../../components/RouteContainer/RouteContainer";
 import Trashcan from "../../assets/trashcan";
 import styles from "./Details.module.scss";
@@ -29,15 +29,17 @@ export const Details: Component = () => {
     fetch((c) => c.updateRemyx(id, remyx()?.name, remyx()?.head));
   };
 
-  const _deletePlaylist = (playlistId: string) => {
+  const _deletePlaylist = (pl: Playlist) => {
     const rmx = remyx();
     if (!rmx) return;
-    fetch((c) => c.deleteRemyxPlaylist(id, playlistId)).then((r) => {
+    fetch((c) => c.deleteRemyxPlaylist(id, pl.uid)).then((r) => {
       if (r.remyx_deleted) {
         nav("/");
       } else {
         _setRemyx({
-          playlists: rmx.playlists?.filter((p) => p.uid !== playlistId),
+          playlists: rmx.playlists?.filter(
+            (p) => !(p.uid === pl.uid && p.owner_id === pl.owner_id)
+          ),
         });
       }
     });
@@ -102,7 +104,7 @@ export const Details: Component = () => {
                     )}
                     {remyx()?.mine && (
                       <div class="controls">
-                        <button onClick={() => _deletePlaylist(item.uid)}>
+                        <button onClick={() => _deletePlaylist(item)}>
                           <Trashcan />
                         </button>
                       </div>

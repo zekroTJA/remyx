@@ -15,7 +15,7 @@ type Database interface {
 	ListRemyxes(userId string) ([]RemyxWithCount, error)
 
 	AddSourcePlaylist(pl RemyxPlaylist) error
-	DeleteSourcePlaylist(remyxUid, playlistUid string) error
+	DeleteSourcePlaylist(remyxUid, userUid, playlistUid string) error
 	GetSourcePlaylists(remyxUid string) ([]RemyxPlaylist, error)
 
 	AddTargetPlaylist(pl RemyxPlaylist) error

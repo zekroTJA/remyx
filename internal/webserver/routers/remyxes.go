@@ -346,7 +346,7 @@ func (t routerRemyxes) delete(ctx *gin.Context) {
 		}
 
 		for _, source := range mySources {
-			err = tx.DeleteSourcePlaylist(id, string(source.PlaylistUid))
+			err = tx.DeleteSourcePlaylist(id, "", string(source.PlaylistUid))
 			if err != nil {
 				ctx.JSON(http.StatusInternalServerError,
 					models.Error{Message: "failed deleting remyx sources", Details: err})
@@ -521,7 +521,7 @@ func (t routerRemyxes) deletePlaylist(ctx *gin.Context) {
 			remyxDeleted = true
 			err = tx.DeleteRemyx(id)
 		} else {
-			err = tx.DeleteSourcePlaylist(id, playlistId)
+			err = tx.DeleteSourcePlaylist(id, me.ID, playlistId)
 		}
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError,

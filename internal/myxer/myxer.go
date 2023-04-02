@@ -88,7 +88,7 @@ func (t *Myxer) Sync(remyxUid string) error {
 		tracks, err := t.getSongs(tx, pl.UserUid, pl.PlaylistUid, rmx.Head)
 		if util.IsSpotifyError(err, http.StatusNotFound) {
 			log.Debug().Fields("rmx", remyxUid, "pl", pl.PlaylistUid).Msg("Removing source playlist")
-			err = tx.DeleteSourcePlaylist(remyxUid, string(pl.PlaylistUid))
+			err = tx.DeleteSourcePlaylist(remyxUid, pl.UserUid, string(pl.PlaylistUid))
 			if err != nil {
 				return err
 			}

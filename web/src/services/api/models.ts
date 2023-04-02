@@ -6,6 +6,7 @@ export type Playlist = {
   image_url: string;
   n_tracks: number;
   owner_name?: string;
+  owner_id?: string;
 };
 
 export type RemyxCreateResponse = {
