@@ -2,17 +2,20 @@ import { Component, For, createEffect, createSignal } from "solid-js";
 import { NavLink, useNavigate } from "@solidjs/router";
 
 import ArrowLeft from "../../assets/allowleft";
+import { NotificationContext } from "../../services/notifications/notifications";
 import { Pager } from "../../components/Pager/Pager";
 import { Playlist } from "../../services/api/models";
 import { RouteContainer } from "../../components/RouteContainer/RouteContainer";
 import styles from "./Create.module.scss";
 import { useApi } from "../../hooks/useApi";
+import useContextEnsured from "../../hooks/useContextEnsured";
 
 const PAGE_SIZE = 10;
 
 export const Create: Component = () => {
   const fetch = useApi();
   const nav = useNavigate();
+  const { show } = useContextEnsured(NotificationContext);
   const [playlists, setPlaylists] = createSignal<Playlist[]>();
   const [selected, setSelected] = createSignal<string>();
   const [head, setHead] = createSignal<number>(20);
@@ -28,9 +31,10 @@ export const Create: Component = () => {
   const _createRemyx = () => {
     const uid = selected();
     if (!uid) return;
-    fetch((c) => c.createRemyx(uid, head(), name())).then((r) =>
-      nav(`/${r.uid}`)
-    );
+    fetch((c) => c.createRemyx(uid, head(), name())).then((r) => {
+      show("success", "The Remyx has been created.");
+      nav(`/${r.uid}`);
+    });
   };
 
   const _selectPlaylist = (uid: string) => {

@@ -2,21 +2,33 @@ import { Component, For, Show, createEffect, createSignal } from "solid-js";
 import { NavLink, useNavigate, useParams } from "@solidjs/router";
 import { Playlist, Remyx } from "../../services/api/models";
 
+import { APIError } from "../../services/api/errors";
 import ArrowLeft from "../../assets/allowleft";
+import { NotificationContext } from "../../services/notifications/notifications";
 import { RouteContainer } from "../../components/RouteContainer/RouteContainer";
 import Trashcan from "../../assets/trashcan";
 import styles from "./Details.module.scss";
 import { useApi } from "../../hooks/useApi";
+import useContextEnsured from "../../hooks/useContextEnsured";
 
 export const Details: Component = () => {
   const fetch = useApi();
   const nav = useNavigate();
+  const { show } = useContextEnsured(NotificationContext);
   const [remyx, setRemyx] = createSignal<Remyx>();
   const { id } = useParams();
 
   createEffect(() => {
     if (!id) return;
-    fetch((c) => c.remyx(id)).then((r) => setRemyx(r));
+    fetch((c) => c.remyx(id))
+      .then((r) => setRemyx(r))
+      .catch((e) => {
+        console.log("TESt");
+        if (e instanceof APIError && e.code === 404) {
+          show("error", "There is no Remyx with this ID.");
+          nav("/");
+        }
+      });
   });
 
   const _setRemyx = (v: Partial<Remyx>) => {
@@ -26,7 +38,9 @@ export const Details: Component = () => {
 
   const _update = () => {
     if (!id) return;
-    fetch((c) => c.updateRemyx(id, remyx()?.name, remyx()?.head));
+    fetch((c) => c.updateRemyx(id, remyx()?.name, remyx()?.head)).then(() =>
+      show("success", "Remyx has been updated.")
+    );
   };
 
   const _deletePlaylist = (pl: Playlist) => {
@@ -34,8 +48,13 @@ export const Details: Component = () => {
     if (!rmx) return;
     fetch((c) => c.deleteRemyxPlaylist(id, pl.uid)).then((r) => {
       if (r.remyx_deleted) {
+        show(
+          "warn",
+          "The Remyx has been deleted because all source playlists have been removed."
+        );
         nav("/");
       } else {
+        show("success", "The source playlist has been removed.");
         _setRemyx({
           playlists: rmx.playlists?.filter(
             (p) => !(p.uid === pl.uid && p.owner_id === pl.owner_id)

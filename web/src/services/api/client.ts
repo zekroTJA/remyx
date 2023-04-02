@@ -66,7 +66,11 @@ export class Client {
     });
 
     if (res.status >= 400) {
-      throw new APIError(res, res.status, res.statusText);
+      let err: Error | undefined = undefined;
+      try {
+        err = await res.json();
+      } catch {}
+      throw new APIError(res, res.status, err?.message ?? res.statusText);
     }
 
     if (res.status != 204) {

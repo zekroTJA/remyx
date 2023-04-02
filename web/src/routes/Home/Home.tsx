@@ -3,13 +3,16 @@ import { MyRemyxes, Remyx } from "../../services/api/models";
 
 import Add from "../../assets/add";
 import { NavLink } from "@solidjs/router";
+import { NotificationContext } from "../../services/notifications/notifications";
 import { RouteContainer } from "../../components/RouteContainer/RouteContainer";
 import Trashcan from "../../assets/trashcan";
 import styles from "./Home.module.scss";
 import { useApi } from "../../hooks/useApi";
+import useContextEnsured from "../../hooks/useContextEnsured";
 
 export const Home: Component = () => {
   const fetch = useApi();
+  const { show } = useContextEnsured(NotificationContext);
   const [remyxes, setRemyxes] = createSignal<MyRemyxes>();
 
   createEffect(() => {
@@ -20,12 +23,13 @@ export const Home: Component = () => {
     e.preventDefault();
     const rmx = remyxes();
     if (!rmx) return;
-    fetch((c) => c.deleteRemyx(id)).then(() =>
+    fetch((c) => c.deleteRemyx(id)).then(() => {
+      show("success", "Remyx has been deleted.");
       setRemyxes({
         connected: rmx.connected.filter((r) => r.uid != id),
         created: rmx.created.filter((r) => r.uid !== id),
-      })
-    );
+      });
+    });
   };
 
   return (
