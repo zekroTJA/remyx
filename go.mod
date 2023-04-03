@@ -19,6 +19,7 @@ require (
 require (
 	github.com/gin-contrib/cors v1.4.0 // indirect
 	github.com/gin-gonic/contrib v0.0.0-20221130124618-7e01895a63f2 // indirect
+	github.com/zekrotja/jwt v0.0.0-20220515133240-d66362c9fbc9 // indirect
 )
 
 require (

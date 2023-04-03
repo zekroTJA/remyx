@@ -234,6 +234,8 @@ github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9de
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/zekroTJA/timedmap v1.5.1 h1:s9SI1T8gl1OAfDw9LKZYMfbhNqqCIOhZTfhsHgpKHMw=
 github.com/zekroTJA/timedmap v1.5.1/go.mod h1:Go4uPxMN1Wjl5IgO6HYD1tM9IQhkYEVqcrrdsI4ljXo=
+github.com/zekrotja/jwt v0.0.0-20220515133240-d66362c9fbc9 h1:9l6wL2Ed+ViHVfC5GiwsI2XH6f+c5HnAdLPpPEcKESA=
+github.com/zekrotja/jwt v0.0.0-20220515133240-d66362c9fbc9/go.mod h1:/RiMK5BoO+YaH/yqSJ72AYLLOfV9m0rvjfdbfA7AYig=
 github.com/zekrotja/rogu v0.4.2 h1:iINUpJyOrs5mKJvTCmonRreVndMntOKCI1Vl/na8/jU=
 github.com/zekrotja/rogu v0.4.2/go.mod h1:4pOJq4Qyv20znbSIpLEWIxq+P5MvgtGIFAMrOA75sXE=
 github.com/zmb3/spotify/v2 v2.3.1 h1:aEyIPotROM3JJjHMCImFROgnPIUpzVo8wymYSaPSd9w=
