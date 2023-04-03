@@ -3,8 +3,11 @@ import Spotify from "../../assets/spotify";
 import Warning from "../../assets/warning";
 import { loginUrl } from "../../services/api/client";
 import styles from "./Login.module.scss";
+import { useLocation } from "@solidjs/router";
 
 export const Login: Component = () => {
+  const { state } = useLocation();
+
   return (
     <div class={styles.container}>
       <div class={styles.login}>
@@ -19,7 +22,7 @@ export const Login: Component = () => {
           Feel free to <a href="https://www.zekro.de/contact">contact</a> me so
           I can add you to the testers list.
         </div>
-        <a class="button" href={loginUrl()}>
+        <a class="button" href={loginUrl((state as any)?.redirect)}>
           <Spotify />
           Login with Spotify
         </a>

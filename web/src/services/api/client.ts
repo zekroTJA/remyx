@@ -10,7 +10,8 @@ import { APIError } from "./errors";
 
 const ENDPOINT = (import.meta.env.VITE_SERVER_ADDRESS ?? "") + "/api";
 
-export const loginUrl = () => `${ENDPOINT}/oauth/login`;
+export const loginUrl = (redirect?: string) =>
+  `${ENDPOINT}/oauth/login${!!redirect ? "?redirect=" + redirect : ""}`;
 
 export class Client {
   constructor() {}

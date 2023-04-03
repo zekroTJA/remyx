@@ -17,7 +17,14 @@ export const useApi = () => {
       if (e instanceof APIError) {
         switch (e.code) {
           case 401:
-            nav("/login");
+            nav("/login", {
+              state: {
+                redirect:
+                  window.location.pathname != "/"
+                    ? window.location.pathname.substring(1)
+                    : undefined,
+              },
+            });
             break;
           case 500:
           case 501:
