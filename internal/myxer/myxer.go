@@ -18,15 +18,17 @@ import (
 const pageSize = 5
 
 type Myxer struct {
-	db   database.Database
-	auth *spotifyauth.Authenticator
+	db         database.Database
+	auth       *spotifyauth.Authenticator
+	publicAddr string
 }
 
-func New(db database.Database, auth *spotifyauth.Authenticator) *Myxer {
+func New(db database.Database, auth *spotifyauth.Authenticator, publicAddr string) *Myxer {
 	var t Myxer
 
 	t.db = db
 	t.auth = auth
+	t.publicAddr = publicAddr
 
 	return &t
 }
@@ -270,7 +272,10 @@ func (t *Myxer) createTargetPlaylist(tx database.Transaction, rmx database.Remyx
 	if rmx.Name != nil {
 		plName = *rmx.Name
 	}
-	pl, err := client.CreatePlaylistForUser(ctx, userUid, plName, "", false, false)
+
+	description := fmt.Sprintf("Created with Remyx. Here you can find your Remyx: %s/%s", t.publicAddr, rmx.Uid)
+	pl, err := client.CreatePlaylistForUser(
+		ctx, userUid, plName, description, false, false)
 	if err != nil {
 		return database.RemyxPlaylist{}, err
 	}

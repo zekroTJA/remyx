@@ -60,7 +60,7 @@ func main() {
 		spotifyauth.WithScopes(scopes...),
 	)
 
-	mxr := myxer.New(db, auth)
+	mxr := myxer.New(db, auth, cfg.Oauth.PublicAddress)
 
 	err = scheduler.Run(mxr, cfg)
 	if err != nil {
