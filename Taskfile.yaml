@@ -21,15 +21,22 @@ tasks:
   build:
     desc: "Builds the backend binary and frontend assets."
     cmds:
-      - task: buildbe
+      - task: build-fe
+      - task: build-be
 
-  buildbe:
+  build-be:
     desc: "Builds the backend binary."
     cmds:
       - go build
         -v
         -o {{.BIN}}
         ./cmd/{{.APP_NAME}}/main.go
+
+  build-fe:
+    desc: "Builds the frontend."
+    dir: "web"
+    cmds:
+      - yarn run build
 
   run:
     desc: "Run backend."
