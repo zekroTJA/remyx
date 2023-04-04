@@ -1,6 +1,8 @@
 package webserver
 
 import (
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/mandrigin/gin-spa/spa"
 	"github.com/zekrotja/remyx/internal/config"
@@ -30,6 +32,7 @@ func Run(
 
 	api := router.Group("/api")
 	api.Use(middleware.Logger(level.Info, "WebServer"))
+	api.Use(middleware.Ratelimit(30, 1*time.Second))
 
 	routers.OAuth(api.Group("/oauth"), auth, cache, cfg.Debug)
 

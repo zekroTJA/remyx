@@ -232,6 +232,8 @@ github.com/ugorji/go/codec v1.2.9/go.mod h1:UNopzCgEMSXjBc6AOMqYvWC1ktqTAfzJZUZg
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
+github.com/zekroTJA/ratelimit v1.1.1 h1:mQGX/8gfePp5ZU46BJuXJs/Z6MdEm97wH93bGP7GUwc=
+github.com/zekroTJA/ratelimit v1.1.1/go.mod h1:vMj8LMv+KSN8vQASf1Y7f5Lxz12XTMXFhNVghnzOIgI=
 github.com/zekroTJA/timedmap v1.5.1 h1:s9SI1T8gl1OAfDw9LKZYMfbhNqqCIOhZTfhsHgpKHMw=
 github.com/zekroTJA/timedmap v1.5.1/go.mod h1:Go4uPxMN1Wjl5IgO6HYD1tM9IQhkYEVqcrrdsI4ljXo=
 github.com/zekrotja/jwt v0.0.0-20220515133240-d66362c9fbc9 h1:9l6wL2Ed+ViHVfC5GiwsI2XH6f+c5HnAdLPpPEcKESA=

@@ -2,11 +2,13 @@ package routers
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/zekrotja/remyx/internal/database"
 	"github.com/zekrotja/remyx/internal/myxer"
 	"github.com/zekrotja/remyx/internal/shared"
+	"github.com/zekrotja/remyx/internal/webserver/middleware"
 	"github.com/zekrotja/remyx/internal/webserver/models"
 	"github.com/zmb3/spotify/v2"
 	"golang.org/x/oauth2"
@@ -24,8 +26,8 @@ func Remyxes(rg *gin.RouterGroup, db database.Database, mxr *myxer.Myxer) {
 	}
 
 	rg.GET("", r.listMine)
-	rg.POST("/create", r.create)
-	rg.POST("/connect/:id", r.connect)
+	rg.POST("/create", middleware.Ratelimit(3, 1*time.Minute), r.create)
+	rg.POST("/connect/:id", middleware.Ratelimit(3, 1*time.Hour), r.connect)
 	rg.GET("/:id", r.get)
 	rg.POST("/:id", r.update)
 	rg.DELETE("/:id", r.delete)
