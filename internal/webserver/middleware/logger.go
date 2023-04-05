@@ -22,6 +22,7 @@ func Logger(lvl level.Level, tag string) gin.HandlerFunc {
 		l.WithLevel(lvl).Fields(
 			"status", ctx.Writer.Status(),
 			"took", took,
+			"client", ctx.ClientIP(),
 		).Msgf("%s %s", method, path)
 	}
 }

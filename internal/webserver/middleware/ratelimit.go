@@ -8,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/zekroTJA/ratelimit"
 	"github.com/zekroTJA/timedmap"
-	"github.com/zekrotja/remyx/internal/shared"
 	"github.com/zekrotja/remyx/internal/webserver/models"
 )
 
@@ -18,18 +17,12 @@ func Ratelimit(burst int, regen time.Duration) gin.HandlerFunc {
 	limiters := timedmap.New(0, cleanupTicker.C)
 
 	return func(ctx *gin.Context) {
-		uid, _ := ctx.Cookie(shared.AuthTokenCookie)
-		if uid == "" {
-			ctx.JSON(http.StatusBadRequest,
-				models.Error{Message: "request does not contain any session ID"})
-			ctx.Abort()
-			return
-		}
+		ipAddr := ctx.ClientIP()
 
-		limiter, ok := limiters.GetValue(uid).(*ratelimit.Limiter)
+		limiter, ok := limiters.GetValue(ipAddr).(*ratelimit.Limiter)
 		if !ok {
 			limiter = ratelimit.NewLimiter(regen, burst)
-			limiters.Set(uid, limiter, time.Duration(burst)*regen)
+			limiters.Set(ipAddr, limiter, time.Duration(burst)*regen)
 		}
 
 		ok, res := limiter.Reserve()
