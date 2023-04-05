@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "@solidjs/router";
 import { NotificationContext } from "../../services/notifications/notifications";
 import { Pager } from "../../components/Pager/Pager";
 import { RouteContainer } from "../../components/RouteContainer/RouteContainer";
+import { isLibraryPlaylist } from "../../util";
 import styles from "./Connect.module.scss";
 import { useApi } from "../../hooks/useApi";
 import useContextEnsured from "../../hooks/useContextEnsured";
@@ -42,9 +43,13 @@ export const Connect: Component = () => {
     });
   };
 
-  const _selectPlaylist = (uid: string) => {
-    if (selected() === uid) setSelected(undefined);
-    else setSelected(uid);
+  const _selectPlaylist = (e: MouseEvent, pl: Playlist) => {
+    if (e.shiftKey && !isLibraryPlaylist(pl.uid)) {
+      window.open(pl.url);
+      return;
+    }
+    if (selected() === pl.uid) setSelected(undefined);
+    else setSelected(pl.uid);
   };
 
   return (
@@ -60,9 +65,14 @@ export const Connect: Component = () => {
               {(item) => (
                 <button
                   class={selected() === item.uid ? "selected" : ""}
-                  onClick={() => _selectPlaylist(item.uid)}
+                  onClick={(e) => _selectPlaylist(e, item)}
                 >
-                  {item.name}
+                  <span>{item.name}</span>
+                  <span class="controls">
+                    {!isLibraryPlaylist(item.uid) && (
+                      <span class="ois">Shift + Click to open in Spotify</span>
+                    )}
+                  </span>
                 </button>
               )}
             </For>

@@ -8,6 +8,7 @@ import Clipboard from "../../assets/clipboard";
 import { NotificationContext } from "../../services/notifications/notifications";
 import { RouteContainer } from "../../components/RouteContainer/RouteContainer";
 import Trashcan from "../../assets/trashcan";
+import { isLibraryPlaylist } from "../../util";
 import styles from "./Details.module.scss";
 import { useApi } from "../../hooks/useApi";
 import useContextEnsured from "../../hooks/useContextEnsured";
@@ -44,7 +45,8 @@ export const Details: Component = () => {
     );
   };
 
-  const _deletePlaylist = (pl: Playlist) => {
+  const _deletePlaylist = (e: MouseEvent, pl: Playlist) => {
+    e.preventDefault();
     const rmx = remyx();
     if (!rmx) return;
     fetch((c) => c.deleteRemyxPlaylist(id, pl.uid)).then((r) => {
@@ -131,19 +133,22 @@ export const Details: Component = () => {
             <div class="playlistList">
               <For each={remyx()?.playlists}>
                 {(item) => (
-                  <div>
+                  <a href={isLibraryPlaylist(item.uid) ? undefined : item.url}>
                     <span>{item.name}</span>
                     {item.owner_name && (
                       <span class="owner">{item.owner_name}</span>
                     )}
-                    {remyx()?.mine && (
-                      <div class="controls">
-                        <button onClick={() => _deletePlaylist(item)}>
+                    <div class="controls">
+                      {!isLibraryPlaylist(item.uid) && (
+                        <span class="ois">Click to open in Spotify</span>
+                      )}
+                      {remyx()?.mine && (
+                        <button onClick={(e) => _deletePlaylist(e, item)}>
                           <Trashcan />
                         </button>
-                      </div>
-                    )}
-                  </div>
+                      )}
+                    </div>
+                  </a>
                 )}
               </For>
             </div>
