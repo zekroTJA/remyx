@@ -1,9 +1,9 @@
 import { Component, For, createEffect, createSignal } from "solid-js";
-import { Playlist, Remyx } from "../../services/api/models";
 import { useNavigate, useParams } from "@solidjs/router";
 
 import { NotificationContext } from "../../services/notifications/notifications";
 import { Pager } from "../../components/Pager/Pager";
+import { Playlist } from "../../services/api/models";
 import { RouteContainer } from "../../components/RouteContainer/RouteContainer";
 import { isLibraryPlaylist } from "../../util";
 import styles from "./Connect.module.scss";

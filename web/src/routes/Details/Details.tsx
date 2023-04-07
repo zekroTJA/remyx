@@ -25,7 +25,6 @@ export const Details: Component = () => {
     fetch((c) => c.remyx(id))
       .then((r) => setRemyx(r))
       .catch((e) => {
-        console.log("TESt");
         if (e instanceof APIError && e.code === 404) {
           show("error", "There is no Remyx with this ID.");
           nav("/");

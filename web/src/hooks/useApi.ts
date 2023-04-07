@@ -26,6 +26,13 @@ export const useApi = () => {
               },
             });
             break;
+          case 429:
+            console.log("TEST RATE LIMIT");
+            notifications?.show(
+              "error",
+              "Oh snap, you have been rate limited! Please try again later."
+            );
+            throw e;
           case 500:
           case 501:
           case 502:

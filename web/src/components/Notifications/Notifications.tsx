@@ -1,6 +1,5 @@
 import {
   NotificationContext,
-  NotificationState,
   NotificationType,
 } from "../../services/notifications/notifications";
 
