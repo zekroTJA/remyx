@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 528 120" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="remyx-Logo">
+        <path d="M40,0C20,0 20,59.96 0,59.96C20,59.96 20,120 40,120C60,120 60,59.96 160,59.96C60,59.96 60.42,0 40,0Z" style="fill:url(#_Linear1);fill-rule:nonzero;"/>
+        <path d="M120,120C140,120 140,59.96 160,59.96C140,59.96 140,0 120,0C100,0 100,59.96 0,59.96C100,59.96 100,120 120,120Z" style="fill:url(#_Linear2);fill-rule:nonzero;"/>
+        <path d="M222.1,64.39C224.79,62.93 226.95,60.96 228.58,58.49C230.21,56.02 231.03,53.27 231.03,50.25C231.03,47.23 230.29,44.75 228.8,42.4C227.31,40.05 225.33,38.19 222.86,36.82C220.39,35.45 217.66,34.77 214.69,34.77L185.24,34.77L185.24,85.17L193.01,85.17L193.01,66.59L210.27,66.59L224.26,85.17L233.98,85.24L219.18,65.63C220.18,65.3 221.16,64.91 222.1,64.4L222.1,64.39ZM193.01,42.25L212.52,42.25C214.34,42.25 216.04,42.61 217.6,43.33C219.16,44.05 220.41,45.01 221.34,46.21C222.28,47.41 222.74,48.75 222.74,50.24C222.74,51.82 222.27,53.29 221.34,54.63C220.41,55.97 219.15,57.06 217.6,57.87C216.04,58.69 214.35,59.09 212.52,59.09L193.01,59.09L193.01,42.24L193.01,42.25Z" style="fill:rgb(230,230,230);fill-rule:nonzero;"/>
+        <path d="M258.03,85.16L299.86,85.16L299.86,77.68L265.8,77.68L265.8,63.06L295.9,63.06L295.9,55.57L265.8,55.57L265.8,42.25L299.86,42.25L299.86,34.76L258.03,34.76L258.03,85.16Z" style="fill:rgb(230,230,230);fill-rule:nonzero;"/>
+        <path d="M353.71,61.51L332.11,34.76L324.48,34.76L324.48,85.16L332.25,85.16L332.25,63.78C332.25,59.8 332.15,56.05 331.96,52.55C331.85,50.56 331.66,48.53 331.43,46.49L351.33,70.69L356.08,70.69L375.98,46.49C375.75,48.53 375.56,50.56 375.45,52.55C375.26,56.05 375.16,59.8 375.16,63.78L375.16,85.16L382.94,85.16L382.94,34.76L375.31,34.76L353.71,61.51Z" style="fill:rgb(230,230,230);fill-rule:nonzero;"/>
+        <path d="M449.76,34.76L431.43,59.1L412.61,34.76L401.81,34.76L427.44,66.4L427.44,85.16L435.22,85.16L435.22,65.77L459.41,34.76L449.76,34.76Z" style="fill:rgb(230,230,230);fill-rule:nonzero;"/>
+        <path d="M527.81,85.16L505.14,60.09L527.02,34.76L516.79,34.76L500.52,54.95L482.74,34.76L472.15,34.76L494.36,59.34L471.79,85.16L481.95,85.16L499.12,64.66L517.15,85.16L527.81,85.16Z" style="fill:rgb(230,230,230);fill-rule:nonzero;"/>
+    </g>
+    <defs>
+        <linearGradient id="_Linear1" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(160,0,0,160,0,60)"><stop offset="0" style="stop-color:rgb(255,0,64);stop-opacity:0"/><stop offset="0.5" style="stop-color:rgb(255,0,64);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(255,0,64);stop-opacity:1"/></linearGradient>
+        <linearGradient id="_Linear2" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(160,0,0,160,0,60)"><stop offset="0" style="stop-color:rgb(255,0,64);stop-opacity:1"/><stop offset="0.5" style="stop-color:rgb(255,0,64);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(255,0,64);stop-opacity:0"/></linearGradient>
+    </defs>
+</svg>
